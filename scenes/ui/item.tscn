@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://ds3xdk2dyp2yo"]
+
+[ext_resource type="Script" uid="uid://b78ccayoxgl2g" path="res://item.gd" id="1_cwagn"]
+[ext_resource type="Texture2D" uid="uid://bgn6qqwpdxs5u" path="res://assets/Items_icon/trash.png" id="2_nmkv6"]
+[ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="3_nmkv6"]
+
+[node name="Item" type="Node2D"]
+z_index = 1
+script = ExtResource("1_cwagn")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 2
+texture = ExtResource("2_nmkv6")
+
+[node name="Label" type="Label" parent="."]
+offset_left = 47.0
+offset_top = 121.0
+offset_right = 95.0
+offset_bottom = 150.0
+theme_override_colors/font_color = Color(0.5104376, 0.464082, 0.38700587, 1)
+theme_override_colors/font_outline_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
+theme_override_constants/line_spacing = 3
+theme_override_constants/paragraph_spacing = 0
+theme_override_constants/outline_size = 7
+theme_override_fonts/font = ExtResource("3_nmkv6")
+theme_override_font_sizes/font_size = 32
+text = "9999"
