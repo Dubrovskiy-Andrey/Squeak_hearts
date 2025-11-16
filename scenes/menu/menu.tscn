@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://b1r4e4wki3qkh"]
 
 [ext_resource type="Texture2D" uid="uid://con37d78h8w7x" path="res://assets/generated_image.jpg" id="1_klgdb"]
-[ext_resource type="Script" uid="uid://dcpwllkfa3w50" path="res://scenes/menu/menu.gd" id="1_mcvr8"]
+[ext_resource type="Script" uid="uid://dcpwllkfa3w50" path="res://scenes/scripts/UI/menu.gd" id="1_mcvr8"]
 
 [sub_resource type="Animation" id="Animation_klgdb"]
 length = 0.001

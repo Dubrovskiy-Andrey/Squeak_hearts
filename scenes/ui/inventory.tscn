@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://ifqvg5jaythd"]
 
-[ext_resource type="Script" uid="uid://b5so26xtf36br" path="res://scenes/ui/inventory.gd" id="1_5yy05"]
+[ext_resource type="Script" uid="uid://b5so26xtf36br" path="res://scenes/scripts/UI/inventory.gd" id="1_5yy05"]
 [ext_resource type="Texture2D" uid="uid://dfvcgsuy7hwb5" path="res://assets/Inventory.jpg" id="1_avmd0"]
 [ext_resource type="Texture2D" uid="uid://d1c2wl0wof0dk" path="res://assets/slot.png" id="2_xeaml"]
-[ext_resource type="Script" uid="uid://1w6g1vtkqhv0" path="res://scenes/ui/slot_1.gd" id="3_xeaml"]
+[ext_resource type="Script" uid="uid://1w6g1vtkqhv0" path="res://scenes/scripts/UI/slot_1.gd" id="3_xeaml"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5yy05"]
 texture = ExtResource("2_xeaml")
@@ -12,10 +12,10 @@ texture = ExtResource("2_xeaml")
 script = ExtResource("1_5yy05")
 
 [node name="TextureRect" type="TextureRect" parent="."]
-offset_left = 556.0
-offset_top = 5.0
-offset_right = 1272.0
-offset_bottom = 1079.4197
+offset_left = 600.0
+offset_top = 55.0
+offset_right = 1224.0
+offset_bottom = 991.3658
 texture = ExtResource("1_avmd0")
 expand_mode = 1
 

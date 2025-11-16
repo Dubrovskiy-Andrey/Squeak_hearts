@@ -15,7 +15,7 @@ enum State {
 var state: State = State.IDLE
 var can_attack: bool = true
 var is_attacking: bool = false
-
+@onready var pickup_point = $PickupPoint
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -125,3 +125,11 @@ func start_attack() -> void:
 	state = State.IDLE
 	is_attacking = false
 	can_attack = true
+
+
+func _input(event):
+	if event.is_action_pressed("pickup"):
+		if $PickupZone.items_in_range.size() > 0:
+			var pickup_item = $PickupZone.items_in_range.values()[0]
+			pickup_item.pick_up_item(self)
+			$PickupZone.items_in_range.erase(pickup_item)

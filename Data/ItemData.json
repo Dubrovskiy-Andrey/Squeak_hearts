@@ -1,50 +1,50 @@
 {
   "Trash": {
-    "ItemCategory": "Currency",
-    "StackSize": 9999,
-    "Description": "Мешок мусора. Используется как основная валюта мира."
+	"ItemCategory": "Currency",
+	"StackSize": 9999,
+	"Description": "Мешок мусора. Используется как основная валюта мира."
   },
 
   "Crystal": {
-    "ItemCategory": "Resource",
-    "StackSize": 6,
-    "Description": "Кристалл. Материал для прокачки у инженера."
+	"ItemCategory": "Resource",
+	"StackSize": 6,
+	"Description": "Кристалл. Материал для прокачки у инженера."
   },
 
   "Key": {
-    "ItemCategory": "StoryItem",
-    "StackSize": 1,
-    "Description": "Ключ для открытия комнаты босса."
+	"ItemCategory": "StoryItem",
+	"StackSize": 1,
+	"Description": "Ключ для открытия комнаты босса."
   },
 
   "MapScroll": {
-    "ItemCategory": "StoryItem",
-    "StackSize": 1,
-    "Description": "Свиток с картой. Покупается у торговца и открывает карту местности."
+	"ItemCategory": "StoryItem",
+	"StackSize": 1,
+	"Description": "Свиток с картой. Покупается у торговца и открывает карту местности."
   },
 
   "HunterMedallion": {
-    "ItemCategory": "StoryItem",
-    "StackSize": 1,
-    "Description": "Медальон верности. Получается за победу над Котом-охотником."
+	"ItemCategory": "StoryItem",
+	"StackSize": 1,
+	"Description": "Медальон верности. Получается за победу над Котом-охотником."
   },
 
   "SkullShard": {
-    "ItemCategory": "StatItem",
-    "StackSize": 9999,
-    "Description": "Черепок. Отражает количество убитых монстров."
+	"ItemCategory": "StatItem",
+	"StackSize": 9999,
+	"Description": "Черепок. Отражает количество убитых монстров."
   },
 
   "TalismanSlotExample": {
-    "ItemCategory": "Talisman",
-    "StackSize": 1,
-    "Stats": {
-      "HPBonus": 10,
-      "DamageBonus": 5,
-      "SpeedBonus": 0
-    },
-    "Description": "Пример амулета. Даёт небольшие бонусы к характеристикам."
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 10,
+	  "DamageBonus": 5,
+	  "SpeedBonus": 0
+	},
+	"Description": "Пример амулета. Даёт небольшие бонусы к характеристикам."
   }
 }
 
-    
+	

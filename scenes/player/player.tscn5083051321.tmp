@@ -1,8 +1,8 @@
 [gd_scene load_steps=34 format=3 uid="uid://y56ga7remamw"]
 
-[ext_resource type="Script" uid="uid://hiudfe3s7p6u" path="res://scenes/scripts/Player/player.gd" id="1_gmlin"]
+[ext_resource type="Script" uid="uid://hiudfe3s7p6u" path="res://scenes/scripts/player.gd" id="1_gmlin"]
 [ext_resource type="Texture2D" uid="uid://yxm8q3wf7iro" path="res://assets/Sprite-0001.png" id="2_dovo2"]
-[ext_resource type="Script" uid="uid://n54nit04svxd" path="res://scenes/scripts/Items/pickup_zone.gd" id="3_gmlin"]
+[ext_resource type="Script" uid="uid://n54nit04svxd" path="res://scenes/scripts/pickup_zone.gd" id="3_gmlin"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_x7p2l"]
 radius = 65.0
