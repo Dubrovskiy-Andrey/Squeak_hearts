@@ -9,16 +9,17 @@ z_index = 1
 script = ExtResource("1_cwagn")
 
 [node name="TextureRect" type="TextureRect" parent="."]
-offset_right = 40.0
-offset_bottom = 40.0
+offset_top = -2.0
+offset_right = 138.0
+offset_bottom = 136.0
 mouse_filter = 2
 texture = ExtResource("2_nmkv6")
 
 [node name="Label" type="Label" parent="."]
 offset_left = 47.0
-offset_top = 121.0
+offset_top = 98.0
 offset_right = 95.0
-offset_bottom = 150.0
+offset_bottom = 127.0
 theme_override_colors/font_color = Color(0.5104376, 0.464082, 0.38700587, 1)
 theme_override_colors/font_outline_color = Color(0.012617188, 0.012617188, 0.012617188, 1)
 theme_override_constants/line_spacing = 3
@@ -27,3 +28,5 @@ theme_override_constants/outline_size = 7
 theme_override_fonts/font = ExtResource("3_nmkv6")
 theme_override_font_sizes/font_size = 32
 text = "9999"
+horizontal_alignment = 3
+vertical_alignment = 3

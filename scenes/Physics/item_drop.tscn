@@ -44,10 +44,11 @@ _data = {
 }
 
 [node name="ItemDrop" type="CharacterBody2D"]
+collision_layer = 4
 script = ExtResource("1_0fiid")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.22709924, 0.22709922)
+scale = Vector2(1.6846377, 1.6846375)
 texture = ExtResource("1_641sv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

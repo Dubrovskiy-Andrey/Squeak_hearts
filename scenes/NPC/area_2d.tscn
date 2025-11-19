@@ -1,0 +1,87 @@
+[gd_scene load_steps=11 format=3 uid="uid://dws6dok71uvkv"]
+
+[ext_resource type="Script" uid="uid://dfueqnnm4tuf1" path="res://scenes/NPC/NPC_Salli.gd" id="1_vjsxu"]
+[ext_resource type="Texture2D" uid="uid://d3a1j1bxt6bjj" path="res://assets/NPC_Salli1.png" id="1_xkogs"]
+[ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="3_h283k"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vjsxu"]
+atlas = ExtResource("1_xkogs")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h283k"]
+atlas = ExtResource("1_xkogs")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yuqg8"]
+atlas = ExtResource("1_xkogs")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eo0k3"]
+atlas = ExtResource("1_xkogs")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lc10d"]
+atlas = ExtResource("1_xkogs")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_m1nwe"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vjsxu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h283k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yuqg8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eo0k3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lc10d")
+}],
+"loop": true,
+"name": &"IDLE",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gl0bj"]
+radius = 70.0
+height = 154.0
+
+[node name="Salli" type="Area2D"]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_vjsxu")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(2, -80)
+scale = Vector2(2.640625, 2.640625)
+sprite_frames = SubResource("SpriteFrames_m1nwe")
+animation = &"IDLE"
+autoplay = "IDLE"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(5, -76)
+shape = SubResource("CapsuleShape2D_gl0bj")
+
+[node name="Label" type="Label" parent="."]
+visible = false
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -47.0
+offset_top = -166.0
+offset_right = 59.0
+offset_bottom = -152.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("3_h283k")
+theme_override_font_sizes/font_size = 33
+text = "Interact(e)"
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]
