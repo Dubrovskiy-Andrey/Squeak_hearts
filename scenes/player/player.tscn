@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://y56ga7remamw"]
+[gd_scene load_steps=35 format=3 uid="uid://y56ga7remamw"]
 
 [ext_resource type="Script" uid="uid://hiudfe3s7p6u" path="res://scenes/scripts/Player/player.gd" id="1_gmlin"]
 [ext_resource type="Texture2D" uid="uid://yxm8q3wf7iro" path="res://assets/Sprite-0001.png" id="2_dovo2"]
@@ -101,12 +101,17 @@ animations = [{
 }, {
 "frames": [],
 "loop": true,
-"name": &"Death",
+"name": &"Damage",
 "speed": 5.0
 }, {
 "frames": [],
 "loop": true,
-"name": &"Hit",
+"name": &"Dash",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"Death",
 "speed": 5.0
 }, {
 "frames": [{
@@ -176,7 +181,7 @@ radius = 68.0
 height = 136.0
 
 [sub_resource type="Animation" id="Animation_dovo2"]
-length = 0.21
+length = 0.4
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -184,7 +189,7 @@ tracks/0/path = NodePath("AnimatedSprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.06666667, 0.13333334, 0.16666667),
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
 "transitions": PackedFloat32Array(1, 1, 1, 1),
 "update": 1,
 "values": [0, 1, 2, 3]
@@ -200,6 +205,64 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": ["Attack"]
+}
+
+[sub_resource type="Animation" id="Animation_0owmy"]
+resource_name = "Damage"
+length = 0.001
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"update": 1,
+"values": []
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AnimatedSprite2D:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": ["Damage"]
+}
+
+[sub_resource type="Animation" id="Animation_qek5x"]
+resource_name = "Dash"
+length = 0.001
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(),
+"transitions": PackedFloat32Array(),
+"update": 1,
+"values": []
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AnimatedSprite2D:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": ["Dash"]
 }
 
 [sub_resource type="Animation" id="Animation_75vfm"]
@@ -228,34 +291,6 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": ["Death"]
-}
-
-[sub_resource type="Animation" id="Animation_0owmy"]
-length = 0.001
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("AnimatedSprite2D:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(),
-"transitions": PackedFloat32Array(),
-"update": 1,
-"values": []
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("AnimatedSprite2D:animation")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": ["Hit"]
 }
 
 [sub_resource type="Animation" id="Animation_gmlin"]
@@ -344,8 +379,9 @@ tracks/1/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_75vfm"]
 _data = {
 &"Attack": SubResource("Animation_dovo2"),
+&"Damage": SubResource("Animation_0owmy"),
+&"Dash": SubResource("Animation_qek5x"),
 &"Death": SubResource("Animation_75vfm"),
-&"Hit": SubResource("Animation_0owmy"),
 &"Idle": SubResource("Animation_gmlin"),
 &"Jump": SubResource("Animation_lvxji"),
 &"Walk": SubResource("Animation_p47bc")
@@ -369,7 +405,7 @@ shape = SubResource("CapsuleShape2D_x7p2l")
 position = Vector2(-14.000001, -96)
 scale = Vector2(2.956771, 2.9567719)
 sprite_frames = SubResource("SpriteFrames_8afob")
-animation = &"Idle"
+animation = &"Attack"
 autoplay = "Idle"
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -401,20 +437,6 @@ shape = SubResource("CapsuleShape2D_3j4b4")
 libraries = {
 &"": SubResource("AnimationLibrary_75vfm")
 }
-
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="HealthBar" type="TextureProgressBar" parent="CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="CurrencyLabel" type="Label" parent="CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 23.0
-
-[node name="InventoryIcon" type="TextureRect" parent="CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 40.0
 
 [node name="PickupZone" type="Area2D" parent="."]
 collision_layer = 0

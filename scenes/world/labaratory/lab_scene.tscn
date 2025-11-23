@@ -1,12 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://2p1kyddp2gmj"]
+[gd_scene load_steps=14 format=3 uid="uid://2p1kyddp2gmj"]
 
 [ext_resource type="Texture2D" uid="uid://bhtclo5nyqtpe" path="res://assets/Lab1.jpg" id="1_biefi"]
+[ext_resource type="Script" uid="uid://f1mbace2d47h" path="res://scenes/world/labaratory/lab_scene.gd" id="1_rqrvs"]
 [ext_resource type="Texture2D" uid="uid://x4cpo5pp1mku" path="res://assets/oak_woods_tileset.png" id="2_biefi"]
 [ext_resource type="PackedScene" uid="uid://y56ga7remamw" path="res://scenes/player/player.tscn" id="3_eq3vy"]
-[ext_resource type="Script" uid="uid://ti810fpncdx6" path="res://scenes/scripts/UI/user_interface.gd" id="4_xpjtd"]
-[ext_resource type="PackedScene" uid="uid://ifqvg5jaythd" path="res://scenes/ui/inventory.tscn" id="5_4yyd6"]
 [ext_resource type="PackedScene" uid="uid://jm4id6qyq0w5" path="res://scenes/Physics/item_drop.tscn" id="6_4yyd6"]
 [ext_resource type="PackedScene" uid="uid://dws6dok71uvkv" path="res://scenes/NPC/area_2d.tscn" id="7_n7rmk"]
+[ext_resource type="PackedScene" uid="uid://tsi5pgxotxh7" path="res://scenes/ui/user_interface.tscn" id="7_rqrvs"]
+[ext_resource type="Script" uid="uid://dl5aipswkkag8" path="res://scenes/world/labaratory/input_handler.gd" id="8_rqrvs"]
 
 [sub_resource type="Animation" id="Animation_klgdb"]
 length = 0.001
@@ -544,6 +545,7 @@ physics_layer_0/collision_mask = 2
 sources/0 = SubResource("TileSetAtlasSource_xpjtd")
 
 [node name="LabScene1" type="Node2D"]
+script = ExtResource("1_rqrvs")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 offset_right = 1920.0
@@ -575,12 +577,6 @@ position = Vector2(609, 977)
 [node name="player" parent="." instance=ExtResource("3_eq3vy")]
 position = Vector2(216, 972)
 
-[node name="UserInterface" type="CanvasLayer" parent="."]
-script = ExtResource("4_xpjtd")
-
-[node name="Inventory" parent="UserInterface" instance=ExtResource("5_4yyd6")]
-visible = false
-
 [node name="ItemDrop" parent="." instance=ExtResource("6_4yyd6")]
 position = Vector2(607, 646)
 
@@ -589,3 +585,8 @@ position = Vector2(715, 733)
 
 [node name="ItemDrop2" parent="." instance=ExtResource("6_4yyd6")]
 position = Vector2(438, 702)
+
+[node name="UserInterface" parent="." instance=ExtResource("7_rqrvs")]
+
+[node name="InputHandler" type="Node" parent="."]
+script = ExtResource("8_rqrvs")
