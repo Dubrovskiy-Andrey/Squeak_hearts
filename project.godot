@@ -67,6 +67,7 @@ audio/channel_defaults={
 variables={
 "EnemyFall": false
 }
+glossary/default_case_sensitive=true
 
 [display]
 
@@ -145,6 +146,7 @@ dialogic_default_action={
 2d_physics/layer_2="Player"
 2d_physics/layer_3="Items"
 2d_physics/layer_4="NPC"
+2d_physics/layer_5="Enemy"
 
 [rendering]
 

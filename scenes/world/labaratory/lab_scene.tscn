@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://jm4id6qyq0w5" path="res://scenes/Physics/item_drop.tscn" id="6_4yyd6"]
 [ext_resource type="PackedScene" uid="uid://dws6dok71uvkv" path="res://scenes/NPC/area_2d.tscn" id="7_n7rmk"]
 [ext_resource type="PackedScene" uid="uid://tsi5pgxotxh7" path="res://scenes/ui/user_interface.tscn" id="7_rqrvs"]
-[ext_resource type="Script" uid="uid://dl5aipswkkag8" path="res://scenes/world/labaratory/input_handler.gd" id="8_rqrvs"]
+[ext_resource type="PackedScene" uid="uid://casijvqcxil2m" path="res://scenes/NPC/enemy.tscn" id="8_rqrvs"]
 
 [sub_resource type="Animation" id="Animation_klgdb"]
 length = 0.001
@@ -575,7 +575,7 @@ layer_0/tile_data = PackedInt32Array(3997696, 131072, 0, 4063232, 131072, 0, 399
 position = Vector2(609, 977)
 
 [node name="player" parent="." instance=ExtResource("3_eq3vy")]
-position = Vector2(216, 972)
+position = Vector2(902, 971)
 
 [node name="ItemDrop" parent="." instance=ExtResource("6_4yyd6")]
 position = Vector2(607, 646)
@@ -588,5 +588,5 @@ position = Vector2(438, 702)
 
 [node name="UserInterface" parent="." instance=ExtResource("7_rqrvs")]
 
-[node name="InputHandler" type="Node" parent="."]
-script = ExtResource("8_rqrvs")
+[node name="Enemy" parent="." instance=ExtResource("8_rqrvs")]
+position = Vector2(97, 978)

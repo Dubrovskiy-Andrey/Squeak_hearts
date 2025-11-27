@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://tsi5pgxotxh7"]
+[gd_scene load_steps=6 format=3 uid="uid://tsi5pgxotxh7"]
 
 [ext_resource type="PackedScene" uid="uid://ifqvg5jaythd" path="res://scenes/ui/inventory.tscn" id="1_284y0"]
 [ext_resource type="Texture2D" uid="uid://cwdot6yjj10sx" path="res://assets/HP/Sprite-0003 (1).png" id="2_rcgkl"]
+[ext_resource type="Script" uid="uid://copuvhc75t7li" path="res://scenes/ui/hud.gd" id="2_vnpvo"]
 [ext_resource type="Texture2D" uid="uid://b0o1utkqcos4h" path="res://assets/HP/Sprite-0001 (1).png" id="3_vnpvo"]
 [ext_resource type="Texture2D" uid="uid://xk1edn7b6hr3" path="res://assets/HP/Sprite-0002 (1).png" id="4_vo76m"]
 
@@ -15,15 +16,21 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+script = ExtResource("2_vnpvo")
 
 [node name="HealthBar" type="TextureProgressBar" parent="HUD"]
 layout_mode = 0
-offset_right = 264.0
-offset_bottom = 83.0
+offset_top = 26.0
+offset_right = 370.0
+offset_bottom = 123.0
+value = 100.0
 nine_patch_stretch = true
 texture_under = ExtResource("2_rcgkl")
 texture_over = ExtResource("3_vnpvo")
 texture_progress = ExtResource("4_vo76m")
+tint_under = Color(0.5470201, 0.4797873, 0.47441024, 1)
+tint_over = Color(0.54509807, 0.47843137, 0.4745098, 1)
+tint_progress = Color(1, 0, 0, 1)
 
 [node name="CurrencyLabel" type="Label" parent="HUD"]
 layout_mode = 0
