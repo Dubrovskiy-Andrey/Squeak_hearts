@@ -590,3 +590,4 @@ position = Vector2(438, 702)
 
 [node name="Enemy" parent="." instance=ExtResource("8_rqrvs")]
 position = Vector2(97, 978)
+item_drop_scene = ExtResource("6_4yyd6")

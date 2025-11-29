@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://y56ga7remamw"]
+[gd_scene load_steps=40 format=3 uid="uid://y56ga7remamw"]
 
 [ext_resource type="Script" uid="uid://hiudfe3s7p6u" path="res://scenes/scripts/Player/player.gd" id="1_gmlin"]
 [ext_resource type="Texture2D" uid="uid://yxm8q3wf7iro" path="res://assets/Sprite-0001.png" id="2_dovo2"]
@@ -23,6 +23,26 @@ region = Rect2(512, 0, 64, 64)
 [sub_resource type="AtlasTexture" id="AtlasTexture_dovo2"]
 atlas = ExtResource("2_dovo2")
 region = Rect2(576, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8ydkj"]
+atlas = ExtResource("2_dovo2")
+region = Rect2(832, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3j4b4"]
+atlas = ExtResource("2_dovo2")
+region = Rect2(896, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yj68g"]
+atlas = ExtResource("2_dovo2")
+region = Rect2(960, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ioxgp"]
+atlas = ExtResource("2_dovo2")
+region = Rect2(1024, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cnsyf"]
+atlas = ExtResource("2_dovo2")
+region = Rect2(1088, 0, 64, 64)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_75vfm"]
 atlas = ExtResource("2_dovo2")
@@ -99,7 +119,22 @@ animations = [{
 "name": &"Attack",
 "speed": 10.0
 }, {
-"frames": [],
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8ydkj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3j4b4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yj68g")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ioxgp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cnsyf")
+}],
 "loop": true,
 "name": &"Damage",
 "speed": 5.0
@@ -209,7 +244,6 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id="Animation_0owmy"]
 resource_name = "Damage"
-length = 0.001
 loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -218,10 +252,10 @@ tracks/0/path = NodePath("AnimatedSprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(),
-"transitions": PackedFloat32Array(),
+"times": PackedFloat32Array(0, 0.2, 0.4, 0.6, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
 "update": 1,
-"values": []
+"values": [0, 1, 2, 3, 4]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -405,7 +439,7 @@ shape = SubResource("CapsuleShape2D_x7p2l")
 position = Vector2(-14.000001, -96)
 scale = Vector2(2.956771, 2.9567719)
 sprite_frames = SubResource("SpriteFrames_8afob")
-animation = &"Attack"
+animation = &"Damage"
 autoplay = "Idle"
 
 [node name="Camera2D" type="Camera2D" parent="."]

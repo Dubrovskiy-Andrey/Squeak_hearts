@@ -1,13 +1,16 @@
 extends Area2D
 
-const ItemDrop = preload("res://scenes/scripts/Items/item_drop.gd")
+var items_in_range: Dictionary = {}
 
-var items_in_range = {}
+func _ready():
+	pass
 
 func _on_body_entered(body):
-	if body is ItemDrop:
-		items_in_range[body] = body
+	if body.is_in_group("item_drop") and is_instance_valid(body):
+		body.pick_up_item(get_parent()) # parent это игрок
+		items_in_range[body.get_instance_id()] = body
+
 
 func _on_body_exited(body):
-	if items_in_range.has(body):
-		items_in_range.erase(body)
+	if items_in_range.has(body.get_instance_id()):
+		items_in_range.erase(body.get_instance_id())
