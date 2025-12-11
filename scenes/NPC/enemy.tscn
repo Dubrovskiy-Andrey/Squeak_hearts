@@ -1,4 +1,4 @@
-[gd_scene load_steps=91 format=3 uid="uid://casijvqcxil2m"]
+[gd_scene load_steps=92 format=3 uid="uid://casijvqcxil2m"]
 
 [ext_resource type="Texture2D" uid="uid://bpwlvyfy03k6r" path="res://assets/cat.png" id="1_8skpk"]
 [ext_resource type="Script" uid="uid://oowtaehq4yc6" path="res://scenes/NPC/enemy.gd" id="1_w147c"]
@@ -329,8 +329,11 @@ animations = [{
 }, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_a0io3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8skpk")
 }],
-"loop": true,
+"loop": false,
 "name": &"Attack",
 "speed": 10.0
 }, {
@@ -359,7 +362,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_y2myi")
 }],
-"loop": true,
+"loop": false,
 "name": &"Death",
 "speed": 8.0
 }, {
@@ -373,7 +376,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_ty3h1")
 }],
-"loop": true,
+"loop": false,
 "name": &"Hurt",
 "speed": 8.0
 }, {
@@ -527,7 +530,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_lb364")
 }],
-"loop": true,
+"loop": false,
 "name": &"Punch",
 "speed": 10.0
 }, {
@@ -555,8 +558,11 @@ animations = [{
 "speed": 9.0
 }]
 
+[sub_resource type="Animation" id="Animation_ktytc"]
+length = 0.001
+
 [sub_resource type="Animation" id="Animation_8skpk"]
-length = 1.1
+length = 1.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -564,10 +570,10 @@ tracks/0/path = NodePath("AnimatedSprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 "update": 1,
-"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -609,7 +615,7 @@ tracks/1/keys = {
 }
 
 [sub_resource type="Animation" id="Animation_ouc43"]
-length = 0.375
+length = 0.5
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -812,6 +818,7 @@ _data = {
 &"Idle3": SubResource("Animation_ujbwi"),
 &"Idle4": SubResource("Animation_eyo7k"),
 &"Punch": SubResource("Animation_kxupc"),
+&"RESET": SubResource("Animation_ktytc"),
 &"Run": SubResource("Animation_npive")
 }
 
@@ -833,7 +840,7 @@ shape = SubResource("CapsuleShape2D_11o71")
 position = Vector2(-2.0000038, -60)
 scale = Vector2(3.653646, 3.653646)
 sprite_frames = SubResource("SpriteFrames_8skpk")
-animation = &"Run"
+animation = &"Idle4"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

@@ -1,9 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://ifqvg5jaythd"]
+[gd_scene load_steps=8 format=3 uid="uid://ifqvg5jaythd"]
 
 [ext_resource type="Script" uid="uid://b5so26xtf36br" path="res://scenes/scripts/UI/inventory.gd" id="1_5yy05"]
-[ext_resource type="Texture2D" uid="uid://dfvcgsuy7hwb5" path="res://assets/Inventory.jpg" id="1_avmd0"]
+[ext_resource type="Texture2D" uid="uid://bar1bbkf3tr5k" path="res://assets/Inventory1.png" id="2_5yy05"]
 [ext_resource type="Texture2D" uid="uid://d1c2wl0wof0dk" path="res://assets/slot.png" id="2_xeaml"]
 [ext_resource type="Script" uid="uid://1w6g1vtkqhv0" path="res://scenes/scripts/UI/slot_1.gd" id="3_xeaml"]
+[ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="5_ulvp7"]
+[ext_resource type="Script" uid="uid://cakp58l6mqvh4" path="res://scenes/ui/stats_panel.gd" id="6_weae1"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5yy05"]
 texture = ExtResource("2_xeaml")
@@ -12,21 +14,22 @@ texture = ExtResource("2_xeaml")
 script = ExtResource("1_5yy05")
 
 [node name="TextureRect" type="TextureRect" parent="."]
-offset_left = 600.0
-offset_top = 55.0
-offset_right = 1224.0
-offset_bottom = 991.3658
-texture = ExtResource("1_avmd0")
+offset_left = -76.0
+offset_top = -43.0
+offset_right = 1952.0
+offset_bottom = 1082.0
+texture = ExtResource("2_5yy05")
 expand_mode = 1
 
 [node name="GridContainer" type="GridContainer" parent="."]
-offset_left = 694.0
-offset_top = 196.0
-offset_right = 1149.0
-offset_bottom = 850.0
+offset_left = 846.0
+offset_top = 106.99999
+offset_right = 1606.0
+offset_bottom = 658.0
+scale = Vector2(1.25, 1.25)
 theme_override_constants/h_separation = 30
-theme_override_constants/v_separation = 30
-columns = 3
+theme_override_constants/v_separation = 12
+columns = 5
 
 [node name="Slot1" type="Panel" parent="GridContainer"]
 custom_minimum_size = Vector2(128, 128)
@@ -99,3 +102,110 @@ custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
 script = ExtResource("3_xeaml")
+
+[node name="Slot13" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot14" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot15" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot16" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot17" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot18" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot19" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Slot20" type="Panel" parent="GridContainer"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
+script = ExtResource("3_xeaml")
+
+[node name="Label" type="Label" parent="."]
+offset_left = 811.0
+offset_top = 881.0
+offset_right = 1302.0
+offset_bottom = 1003.0
+theme_override_fonts/font = ExtResource("5_ulvp7")
+theme_override_font_sizes/font_size = 80
+text = "Рюкзак"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="."]
+offset_left = 1338.0
+offset_top = 881.0
+offset_right = 1829.0
+offset_bottom = 1003.0
+theme_override_fonts/font = ExtResource("5_ulvp7")
+theme_override_font_sizes/font_size = 80
+text = "Талисманы"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatsPanel" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("6_weae1")
+
+[node name="HealthLabel" type="Label" parent="StatsPanel"]
+layout_mode = 0
+offset_left = 179.0
+offset_top = 859.0
+offset_right = 224.0
+offset_bottom = 907.0
+theme_override_fonts/font = ExtResource("5_ulvp7")
+theme_override_font_sizes/font_size = 60
+text = "90"
+
+[node name="DamageLabel" type="Label" parent="StatsPanel"]
+layout_mode = 0
+offset_left = 382.0
+offset_top = 864.0
+offset_right = 427.0
+offset_bottom = 912.0
+theme_override_fonts/font = ExtResource("5_ulvp7")
+theme_override_font_sizes/font_size = 60
+text = "10"
+
+[node name="CurrencyLabel" type="Label" parent="StatsPanel"]
+layout_mode = 0
+offset_left = 593.0
+offset_top = 863.0
+offset_right = 633.0
+offset_bottom = 911.0
+theme_override_fonts/font = ExtResource("5_ulvp7")
+theme_override_font_sizes/font_size = 60
+text = "0"

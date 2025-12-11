@@ -1,9 +1,6 @@
 extends Node
 
-const SlotClass = preload("res://scenes/scripts/UI/slot_1.gd")
-const ItemClass = preload("res://scenes/scripts/Items/item.gd")
 const NUM_INVENTORY_SLOTS = 20
-
 var inventory = {
 	0: ["Key", 1],
 	1: ["Trash", 9997],
@@ -24,15 +21,14 @@ func add_item(item_name, item_quantity):
 				return
 			else:
 				inventory[item][1] += able_to_add
-				item_quantity = item_quantity - able_to_add
-	
+				item_quantity -= able_to_add
 	for i in range(NUM_INVENTORY_SLOTS):
 		if inventory.has(i) == false:
 			inventory[i] = [item_name, item_quantity]
 			inventory_changed.emit()
 			return
 
-func remove_item(slot: SlotClass):
+func remove_item(slot):
 	inventory.erase(slot.slot_index)
 	inventory_changed.emit()
 
@@ -40,11 +36,10 @@ func add_item_to_empty_slot(item, slot):
 	inventory[slot.slot_index] = [item.item_name, item.item_quantity]
 	inventory_changed.emit()
 
-func add_item_quantity(slot: SlotClass, quantity_to_add: int):
+func add_item_quantity(slot, quantity_to_add: int):
 	inventory[slot.slot_index][1] += quantity_to_add
 	inventory_changed.emit()
 
-# Новая функция для получения общей суммы валюты
 func get_currency_amount() -> int:
 	var total = 0
 	for slot in inventory:
@@ -52,13 +47,10 @@ func get_currency_amount() -> int:
 			total += inventory[slot][1]
 	return total
 
-# Функция для расходования валюты
 func spend_currency(amount: int) -> bool:
 	var total_trash = get_currency_amount()
 	if total_trash >= amount:
 		var amount_to_remove = amount
-		
-		# Удаляем валюту из слотов
 		var slots_to_remove = []
 		for slot in inventory:
 			if inventory[slot][0] == "Trash":
@@ -70,11 +62,8 @@ func spend_currency(amount: int) -> bool:
 					inventory[slot][1] -= amount_to_remove
 					amount_to_remove = 0
 					break
-		
-		# Удаляем пустые слоты
 		for slot in slots_to_remove:
 			inventory.erase(slot)
-		
 		inventory_changed.emit()
 		return true
 	return false
