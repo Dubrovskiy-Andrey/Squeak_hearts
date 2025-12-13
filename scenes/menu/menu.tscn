@@ -90,10 +90,13 @@ _data = {
 &"move": SubResource("Animation_mcvr8")
 }
 
-[node name="Menu" type="Node2D"]
+[node name="Menu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_mcvr8")
 
 [node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
 texture = ExtResource("1_klgdb")
@@ -107,11 +110,15 @@ autoplay = "move"
 
 [node name="ColorRect" type="ColorRect" parent="."]
 modulate = Color(1, 1, 1, 0)
-offset_right = 1920.0
-offset_bottom = 1080.0
+layout_mode = 0
+offset_left = 1.0
+offset_top = -8.0
+offset_right = 1921.0
+offset_bottom = 1072.0
 color = Color(0, 0, 0, 1)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
 offset_left = 864.0
 offset_top = 433.0
 offset_right = 1128.0
@@ -132,6 +139,11 @@ text = "Продолжить"
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "Настройки"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Выйти"
 
 [connection signal="pressed" from="VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ContinueGameButton" to="." method="_on_continue_game_button_pressed"]
