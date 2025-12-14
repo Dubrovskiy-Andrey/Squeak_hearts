@@ -44,5 +44,38 @@
 	  "SpeedBonus": 0
 	},
 	"Description": "Пример амулета. Даёт небольшие бонусы к характеристикам."
+  },
+
+  "RingOfHealth": {
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 50,
+	  "DamageBonus": 0,
+	  "SpeedBonus": 0
+	},
+	"Description": "Кольцо здоровья. Увеличивает максимальное здоровье на 50."
+  },
+
+  "RingOfDamage": {
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 0,
+	  "DamageBonus": 10,
+	  "SpeedBonus": 0
+	},
+	"Description": "Кольцо силы. Увеличивает урон на 10."
+  },
+
+  "RingOfBalance": {
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 25,
+	  "DamageBonus": 5,
+	  "SpeedBonus": 0
+	},
+	"Description": "Кольцо баланса. Увеличивает здоровье на 25 и урон на 5."
   }
 }

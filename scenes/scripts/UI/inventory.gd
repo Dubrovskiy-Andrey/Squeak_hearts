@@ -15,12 +15,90 @@ func _ready():
 	backpack_button.pressed.connect(_on_backpack_tab_pressed)
 	talismans_button.pressed.connect(_on_talismans_tab_pressed)
 	
+	var talisman_slots_container = $LeftPanel/TalismanSlots
+	if talisman_slots_container is VBoxContainer:
+		talisman_slots_container.add_theme_constant_override("separation", 15)
+	
+	for slot in talismans_slots:
+		if slot.has_signal("slot_right_clicked"):
+			slot.slot_right_clicked.connect(_on_talisman_slot_right_clicked)
+		if slot.has_signal("slot_clicked"):
+			slot.slot_clicked.connect(_on_talisman_slot_clicked)
+	
+	for slot in talisman_equip_slots:
+		if slot.has_signal("slot_right_clicked"):
+			slot.slot_right_clicked.connect(_on_equip_slot_right_clicked)
+		if slot.has_signal("slot_clicked"):
+			slot.slot_clicked.connect(_on_equip_slot_clicked)
+	
 	_switch_to_tab("backpack")
+	call_deferred("_initialize_after_load")
+
+func _initialize_after_load():
+	await get_tree().process_frame
+	
+	load_equipped_talismans()
 	refresh_inventory()
 	
 	if PlayerInventory:
 		PlayerInventory.inventory_changed.connect(refresh_inventory)
 		PlayerInventory.talisman_inventory_changed.connect(refresh_inventory)
+
+func _get_equipped_names() -> Array:
+	var names = []
+	for talisman in equipped_talismans:
+		if talisman != null:
+			names.append(talisman["name"])
+		else:
+			names.append("")
+	return names
+
+func get_save_system():
+	if has_node("/root/SaveSystem"):
+		return get_node("/root/SaveSystem")
+	
+	var root = get_tree().root
+	for node in root.get_children():
+		if node is Node and node.name == "SaveSystem":
+			return node
+	
+	return null
+
+func save_equipped_talismans():
+	var equipped_names = _get_equipped_names()
+	
+	var save_system = get_save_system()
+	if save_system:
+		save_system.set_equipped_talismans(equipped_names)
+
+func load_equipped_talismans():
+	var save_system = get_save_system()
+	if not save_system:
+		return
+	
+	var equipped_names = save_system.get_equipped_talismans()
+	_apply_loaded_talismans(equipped_names)
+
+func _apply_loaded_talismans(equipped_names: Array):
+	for i in range(equipped_talismans.size()):
+		equipped_talismans[i] = null
+	
+	for i in range(min(equipped_names.size(), 3)):
+		var talisman_name = equipped_names[i]
+		
+		if talisman_name != "" and talisman_name != null:
+			if PlayerInventory:
+				var talisman_data = PlayerInventory.get_talisman_data(talisman_name)
+				if talisman_data:
+					equipped_talismans[i] = talisman_data
+	
+	_apply_talisman_bonuses()
+	refresh_equipped_talismans()
+
+func get_equipped_talisman(slot_index: int):
+	if slot_index >= 0 and slot_index < equipped_talismans.size():
+		return equipped_talismans[slot_index]
+	return null
 
 func _on_backpack_tab_pressed():
 	_switch_to_tab("backpack")
@@ -37,20 +115,62 @@ func _switch_to_tab(tab_name: String):
 			talismans_panel.visible = false
 			backpack_button.disabled = true
 			talismans_button.disabled = false
-			print("Переключено на вкладку: Рюкзак")
 		
 		"talismans":
 			backpack_panel.visible = false
 			talismans_panel.visible = true
 			backpack_button.disabled = false
 			talismans_button.disabled = true
-			print("Переключено на вкладку: Талисманы")
-			
 			refresh_talismans()
 
-func refresh_inventory():
-	print("=== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ===")
+func _on_talisman_slot_right_clicked(slot):
+	var item_name = slot.get_item_name()
+	if item_name == "":
+		return
 	
+	for i in range(equipped_talismans.size()):
+		if equipped_talismans[i] == null:
+			var talisman_data = PlayerInventory.get_talisman_data(item_name)
+			if talisman_data:
+				equip_talisman(talisman_data, i)
+				
+				var slot_index = _find_talisman_slot_index(slot)
+				if slot_index != -1:
+					PlayerInventory.remove_talisman(slot_index)
+				
+				save_equipped_talismans()
+				return
+
+func _on_equip_slot_right_clicked(slot):
+	var slot_index = -1
+	for i in range(talisman_equip_slots.size()):
+		if talisman_equip_slots[i] == slot:
+			slot_index = i
+			break
+	
+	if slot_index == -1:
+		return
+	
+	if equipped_talismans[slot_index] != null:
+		var talisman_name = equipped_talismans[slot_index]["name"]
+		unequip_talisman(slot_index)
+		
+		var success = PlayerInventory.add_talisman(talisman_name)
+		save_equipped_talismans()
+
+func _on_talisman_slot_clicked(slot):
+	pass
+
+func _on_equip_slot_clicked(slot):
+	pass
+
+func _find_talisman_slot_index(clicked_slot):
+	for i in range(talismans_slots.size()):
+		if talismans_slots[i] == clicked_slot:
+			return i
+	return -1
+
+func refresh_inventory():
 	var stats_panel = $LeftPanel/StatsPanel
 	if stats_panel and stats_panel.has_method("refresh_stats"):
 		stats_panel.refresh_stats()
@@ -84,9 +204,8 @@ func _refresh_backpack():
 					slot.initialize_item(item_name, item_quantity)
 
 func refresh_talismans():
-	print("Обновление инвентаря талисманов")
-	
-	for slot in talismans_slots:
+	for i in range(talismans_slots.size()):
+		var slot = talismans_slots[i]
 		if slot.has_method("clear_item"):
 			slot.clear_item()
 	
@@ -103,8 +222,6 @@ func refresh_talismans():
 					slot.initialize_item(talisman_name, 1)
 
 func refresh_equipped_talismans():
-	print("Обновление экипированных талисманов")
-	
 	for slot in talisman_equip_slots:
 		if slot.has_method("clear_item"):
 			slot.clear_item()
@@ -119,18 +236,16 @@ func refresh_equipped_talismans():
 
 func equip_talisman(talisman_data, slot_index: int):
 	if slot_index < 0 or slot_index >= equipped_talismans.size():
-		print("❌ Неверный слот для талисмана!")
 		return
 	
 	if equipped_talismans[slot_index] != null:
 		unequip_talisman(slot_index)
 	
 	equipped_talismans[slot_index] = talisman_data
-	print("✅ Талисман экипирован в слот", slot_index)
 	
 	_apply_talisman_bonuses()
-	
 	refresh_equipped_talismans()
+	save_equipped_talismans()
 
 func unequip_talisman(slot_index: int):
 	if slot_index < 0 or slot_index >= equipped_talismans.size():
@@ -140,13 +255,10 @@ func unequip_talisman(slot_index: int):
 	if talisman == null:
 		return
 	
-	print("📤 Талисман снят со слота", slot_index)
-	
 	_remove_talisman_bonuses(talisman)
-	
 	equipped_talismans[slot_index] = null
-	
 	refresh_equipped_talismans()
+	save_equipped_talismans()
 
 func _apply_talisman_bonuses():
 	var player = get_tree().get_first_node_in_group("players")
@@ -164,7 +276,14 @@ func _apply_talisman_bonuses():
 			player.talisman_damage_bonus += stats.get("DamageBonus", 0)
 			player.talisman_speed_bonus += stats.get("SpeedBonus", 0)
 	
-	print("💎 Бонусы талисманов применены")
+	if player.has_method("_refresh_inventory_stats"):
+		player._refresh_inventory_stats()
+	
+	if player.has_signal("health_changed"):
+		player.emit_signal("health_changed", 
+			player.current_health + player.talisman_hp_bonus, 
+			player.max_health + player.talisman_hp_bonus
+		)
 
 func _remove_talisman_bonuses(talisman):
 	var player = get_tree().get_first_node_in_group("players")
@@ -177,7 +296,14 @@ func _remove_talisman_bonuses(talisman):
 		player.talisman_damage_bonus -= stats.get("DamageBonus", 0)
 		player.talisman_speed_bonus -= stats.get("SpeedBonus", 0)
 	
-	print("💎 Бонусы талисмана убраны")
+	if player.has_method("_refresh_inventory_stats"):
+		player._refresh_inventory_stats()
+	
+	if player.has_signal("health_changed"):
+		player.emit_signal("health_changed", 
+			player.current_health + player.talisman_hp_bonus, 
+			player.max_health + player.talisman_hp_bonus
+		)
 
 func add_item(item_name: String, quantity: int):
 	if PlayerInventory:

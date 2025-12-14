@@ -58,7 +58,10 @@ func _ready():
 	if hud_path and has_node(hud_path):
 		hud_node = get_node(hud_path)
 
-	emit_signal("health_changed", current_health, max_health)
+	# Отправляем начальные сигналы с учетом бонусов талисманов
+	var total_current = current_health + talisman_hp_bonus
+	var total_max = max_health + talisman_hp_bonus
+	emit_signal("health_changed", total_current, total_max)
 	emit_signal("currency_changed", currency)
 
 	if inventory_path and has_node(inventory_path):
@@ -117,7 +120,10 @@ func apply_upgrade(health_bonus: int, damage_bonus: int, cost: int) -> bool:
 		if currency_label:
 			currency_label.text = str(currency)
 		
-		emit_signal("health_changed", current_health, max_health)
+		# Отправляем сигналы с учетом бонусов талисманов
+		var total_current = current_health + talisman_hp_bonus
+		var total_max = max_health + talisman_hp_bonus
+		emit_signal("health_changed", total_current, total_max)
 		emit_signal("currency_changed", currency)
 		
 		update_save_data()
@@ -129,6 +135,8 @@ func apply_upgrade(health_bonus: int, damage_bonus: int, cost: int) -> bool:
 func _ensure_stats_panel_found():
 	if inventory_node:
 		stats_panel = inventory_node.get_node_or_null("StatsPanel")
+		if stats_panel:
+			print("StatsPanel найден:", stats_panel.name)
 
 func _connect_pickup_signals():
 	for child in get_children():
@@ -138,6 +146,7 @@ func _connect_pickup_signals():
 			child.body_entered.connect(Callable(self, "_on_pickup_zone_body_entered"))
 			return
 
+# В функции _input обновите вызов save_game:
 func _input(event):
 	if event.is_action_pressed("inventory") and inventory_node:
 		inventory_node.visible = not inventory_node.visible
@@ -150,6 +159,7 @@ func _input(event):
 			_refresh_inventory_stats()
 	
 	if event.is_action_pressed("ui_select") and save_system:
+		# Используем только 2 аргумента
 		save_system.save_game(self)
 	
 	if event.is_action_pressed("ui_cancel"):
@@ -281,18 +291,30 @@ func take_damage(damage: float) -> void:
 	current_health = max(current_health - damage, 0)
 	if health_bar:
 		health_bar.value = current_health
-	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
+	
+	# Отправляем сигнал с учетом бонусов талисманов
+	var total_current = current_health + talisman_hp_bonus
+	var total_max = max_health + talisman_hp_bonus
+	emit_signal("health_changed", total_current, total_max)
+	
 	if anim_player.has_animation("hit_effect"):
 		anim_player.play("hit_effect")
+	
 	if current_health <= 0:
 		die()
+	
 	_refresh_inventory_stats()
 
 func heal(amount: float) -> void:
 	current_health = min(current_health + amount, max_health)
 	if health_bar:
 		health_bar.value = current_health
-	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
+	
+	# Отправляем сигнал с учетом бонусов талисманов
+	var total_current = current_health + talisman_hp_bonus
+	var total_max = max_health + talisman_hp_bonus
+	emit_signal("health_changed", total_current, total_max)
+	
 	_refresh_inventory_stats()
 
 func die() -> void:
@@ -316,6 +338,9 @@ func _auto_pick_item(item):
 			save_system.add_currency(10)
 		
 		emit_signal("currency_changed", currency)
+		_refresh_inventory_stats()
+		
+		print("Подобрана валюта: +10, всего: ", currency)
 	elif item.item_name == "Crystal":
 		_auto_pick_crystal(item)
 		return

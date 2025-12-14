@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://ifqvg5jaythd"]
+[gd_scene load_steps=9 format=3 uid="uid://ifqvg5jaythd"]
 
 [ext_resource type="Script" uid="uid://b5so26xtf36br" path="res://scenes/scripts/UI/inventory.gd" id="1_5yy05"]
 [ext_resource type="Texture2D" uid="uid://bar1bbkf3tr5k" path="res://assets/Inventory1.png" id="2_5yy05"]
 [ext_resource type="Texture2D" uid="uid://d1c2wl0wof0dk" path="res://assets/slot.png" id="2_xeaml"]
 [ext_resource type="Script" uid="uid://1w6g1vtkqhv0" path="res://scenes/scripts/UI/slot_1.gd" id="3_xeaml"]
+[ext_resource type="Script" uid="uid://ds2xjrxiipei7" path="res://scenes/scripts/Items/TalismanSlot.gd" id="5_bfvro"]
 [ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="5_ulvp7"]
 [ext_resource type="Script" uid="uid://cakp58l6mqvh4" path="res://scenes/ui/stats_panel.gd" id="6_weae1"]
 
@@ -62,20 +63,30 @@ theme_override_font_sizes/font_size = 60
 text = "0"
 
 [node name="TalismanSlots" type="VBoxContainer" parent="LeftPanel"]
-layout_mode = 0
+layout_mode = 1
 offset_left = 527.0
 offset_top = 166.0
 offset_right = 689.0
 offset_bottom = 694.0
+theme_override_constants/separation = 25
+alignment = 1
 
 [node name="TalismanSlot1" type="Panel" parent="LeftPanel/TalismanSlots"]
+custom_minimum_size = Vector2(150, 160)
 layout_mode = 2
+script = ExtResource("5_bfvro")
+is_equip_slot = true
 
 [node name="TalismanSlot2" type="Panel" parent="LeftPanel/TalismanSlots"]
+custom_minimum_size = Vector2(150, 160)
 layout_mode = 2
+size_flags_vertical = 8
+script = ExtResource("5_bfvro")
 
 [node name="TalismanSlot3" type="Panel" parent="LeftPanel/TalismanSlots"]
+custom_minimum_size = Vector2(150, 160)
 layout_mode = 2
+script = ExtResource("5_bfvro")
 
 [node name="RightPanel" type="Panel" parent="."]
 offset_right = 40.0
@@ -238,121 +249,121 @@ columns = 5
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot2" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot3" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot4" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot5" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot6" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot7" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot8" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot9" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot10" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot11" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot12" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot13" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot14" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot15" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot16" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot17" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot18" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot19" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Slot20" type="Panel" parent="RightPanel/TalismansPanel/TalismansGrid"]
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_5yy05")
-script = ExtResource("3_xeaml")
+script = ExtResource("5_bfvro")
 
 [node name="Label" type="Label" parent="."]
 offset_left = 811.0

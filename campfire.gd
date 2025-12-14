@@ -7,7 +7,7 @@ extends Area2D
 var player_in_range: bool = false
 var can_interact: bool = true
 
-@export var campfire_id: String = "campfire_1"  # Уникальный ID для каждого костра
+@export var campfire_id: String = "campfire_1"
 
 func _ready():
 	anim_player.play("Idle")
@@ -48,16 +48,10 @@ func interact_with_campfire():
 	print("Взаимодействие с костром")
 	can_interact = false
 	
-	# 1. Показываем эффект
 	show_interaction_effect()
-	
-	# 2. Лечим игрока
 	heal_player()
-	
-	# 3. СОХРАНЯЕМ ИГРУ
 	save_game_at_campfire()
 	
-	# 4. Ждем и перезагружаем
 	await get_tree().create_timer(0.5).timeout
 	
 	print("Перезагрузка локации...")
@@ -78,8 +72,8 @@ func save_game_at_campfire():
 	if players.size() > 0:
 		var player = players[0]
 		
-		# Сохраняем через SaveSystem
 		if save_system:
+			# Передаем ID костра вторым аргументом
 			save_system.save_game(player, campfire_id)
 			print("Игра сохранена через SaveSystem")
 		else:
