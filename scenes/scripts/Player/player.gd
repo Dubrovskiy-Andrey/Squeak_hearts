@@ -24,6 +24,11 @@ var can_move: bool = true
 var current_health: float
 var currency: int = 0
 
+# Бонусы от талисманов
+var talisman_hp_bonus: int = 0
+var talisman_damage_bonus: int = 0
+var talisman_speed_bonus: int = 0
+
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var pickup_point: Node2D = $PickupPoint
@@ -190,7 +195,8 @@ func _state_idle():
 
 func _state_move():
 	var dir = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
-	velocity.x = dir * move_speed
+	var speed_multiplier = 1.0 + (talisman_speed_bonus / 100.0)
+	velocity.x = dir * move_speed * speed_multiplier
 	if dir != 0:
 		sprite.flip_h = dir > 0
 		anim_player.play("Walk")
@@ -211,7 +217,8 @@ func _state_move():
 func _state_jump():
 	anim_player.play("Jump")
 	var dir = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
-	velocity.x = dir * move_speed
+	var speed_multiplier = 1.0 + (talisman_speed_bonus / 100.0)
+	velocity.x = dir * move_speed * speed_multiplier
 	if dir != 0:
 		sprite.flip_h = dir > 0
 
@@ -244,9 +251,10 @@ func start_attack() -> void:
 		state = State.IDLE
 
 func _apply_attack_damage():
+	var total_damage = attack_damage + talisman_damage_bonus
 	for enemy in enemies_in_attack_range:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
-			enemy.take_damage(attack_damage)
+			enemy.take_damage(total_damage)
 
 func _on_attack_range_body_entered(body):
 	if body.is_in_group("enemies") and not enemies_in_attack_range.has(body):
@@ -273,7 +281,7 @@ func take_damage(damage: float) -> void:
 	current_health = max(current_health - damage, 0)
 	if health_bar:
 		health_bar.value = current_health
-	emit_signal("health_changed", current_health, max_health)
+	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
 	if anim_player.has_animation("hit_effect"):
 		anim_player.play("hit_effect")
 	if current_health <= 0:
@@ -284,7 +292,7 @@ func heal(amount: float) -> void:
 	current_health = min(current_health + amount, max_health)
 	if health_bar:
 		health_bar.value = current_health
-	emit_signal("health_changed", current_health, max_health)
+	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
 	_refresh_inventory_stats()
 
 func die() -> void:
@@ -347,10 +355,12 @@ func _refresh_inventory_stats():
 		stats_panel.refresh_stats()
 
 func get_player_health() -> String:
-	return str(int(current_health)) + "/" + str(int(max_health))
+	var total_hp = max_health + talisman_hp_bonus
+	var total_current = current_health + talisman_hp_bonus
+	return str(int(total_current)) + "/" + str(int(total_hp))
 
 func get_player_damage() -> int:
-	return attack_damage
+	return attack_damage + talisman_damage_bonus
 
 func get_player_currency() -> int:
 	return currency

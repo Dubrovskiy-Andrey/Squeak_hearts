@@ -1,13 +1,29 @@
 extends Node
 
 const NUM_INVENTORY_SLOTS = 20
+const NUM_TALISMAN_SLOTS = 20
+
 var inventory = {
 	0: ["Key", 1],
 }
 
+var talisman_inventory = {}
+
 signal inventory_changed
+signal talisman_inventory_changed
 
 func add_item(item_name, item_quantity):
+	# Проверяем тип предмета
+	if JsonData.item_data.has(item_name):
+		var item_category = JsonData.item_data[item_name]["ItemCategory"]
+		
+		# Талисманы - в отдельный инвентарь
+		if item_category == "Talisman":
+			for _i in range(item_quantity):
+				add_talisman(item_name)
+			return
+	
+	# Обычные предметы
 	if item_name == "Crystal":
 		add_crystal(item_quantity)
 		return
@@ -75,13 +91,17 @@ func add_crystal(amount: int = 1):
 		if inventory[slot][0] == "Crystal":
 			inventory[slot][1] += amount
 			inventory_changed.emit()
+			print("Кристаллов добавлено:", amount)
 			return true
 	
 	for i in range(NUM_INVENTORY_SLOTS):
 		if not inventory.has(i):
 			inventory[i] = ["Crystal", amount]
 			inventory_changed.emit()
+			print("Создан слот для кристаллов:", amount)
 			return true
+	
+	print("Нет места для кристаллов!")
 	return false
 
 func get_crystal_count() -> int:
@@ -90,17 +110,13 @@ func get_crystal_count() -> int:
 			return inventory[slot][1]
 	return 0
 
-# В PlayerInventory.gd добавь:
-
 func spend_crystals(amount: int) -> bool:
-	# Ищем кристаллы в инвентаре
 	for slot in inventory:
 		if inventory[slot][0] == "Crystal":
 			var current_amount = inventory[slot][1]
 			if current_amount >= amount:
 				inventory[slot][1] -= amount
 				
-				# Если кристаллов не осталось, удаляем слот
 				if inventory[slot][1] <= 0:
 					inventory.erase(slot)
 				
@@ -108,5 +124,38 @@ func spend_crystals(amount: int) -> bool:
 				print("Кристаллов потрачено:", amount)
 				return true
 	
-	print("Недостаточно кристаллов! Нужно:", amount)
+	print("Недостаточно кристаллов!")
 	return false
+
+# === МЕТОДЫ ДЛЯ ТАЛИСМАНОВ ===
+
+func add_talisman(talisman_name: String):
+	for i in range(NUM_TALISMAN_SLOTS):
+		if not talisman_inventory.has(i):
+			talisman_inventory[i] = [talisman_name, 1]
+			talisman_inventory_changed.emit()
+			print("Талисман добавлен:", talisman_name)
+			return true
+	print("Нет места для талисманов!")
+	return false
+
+func get_talisman_count() -> int:
+	return talisman_inventory.size()
+
+func remove_talisman(slot_index: int):
+	if talisman_inventory.has(slot_index):
+		talisman_inventory.erase(slot_index)
+		talisman_inventory_changed.emit()
+		return true
+	return false
+
+func get_talisman_data(talisman_name: String) -> Dictionary:
+	if JsonData.item_data.has(talisman_name):
+		var data = JsonData.item_data[talisman_name]
+		return {
+			"name": talisman_name,
+			"category": data["ItemCategory"],
+			"description": data["Description"],
+			"stats": data.get("Stats", {})
+		}
+	return {}
