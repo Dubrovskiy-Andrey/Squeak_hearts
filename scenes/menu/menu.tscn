@@ -95,6 +95,14 @@ layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_mcvr8")
 
+[node name="ConfirmPopup" type="ConfirmationDialog" parent="."]
+oversampling_override = 1.0
+mode = 3
+position = Vector2i(100, 36)
+visible = true
+ok_button_text = "Ок"
+cancel_button_text = "Отмена"
+
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0
 offset_right = 1920.0
@@ -148,3 +156,4 @@ text = "Выйти"
 [connection signal="pressed" from="VBoxContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ContinueGameButton" to="." method="_on_continue_game_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

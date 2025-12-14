@@ -21,6 +21,7 @@ JsonData="*res://JSONData.gd"
 PlayerInventory="*res://scenes/scripts/UI/PlayerInventory.gd"
 Dialogic="*res://addons/dialogic/Core/DialogicGameHandler.gd"
 save_system="*res://save_system.gd"
+SettingsManager="*res://SettingsManager.gd"
 
 [dialogic]
 
