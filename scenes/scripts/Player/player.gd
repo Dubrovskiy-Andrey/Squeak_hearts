@@ -39,11 +39,8 @@ var stats_panel: Control = null
 
 func _ready():
 	add_to_group("players")
-	
-	# ЗАГРУЗКА СОХРАНЕННЫХ ДАННЫХ
 	load_saved_data()
 	
-	# HUD элементы
 	if health_bar_path and has_node(health_bar_path):
 		health_bar = get_node(health_bar_path)
 		health_bar.max_value = max_health
@@ -53,76 +50,80 @@ func _ready():
 		currency_label = get_node(currency_label_path)
 		currency_label.text = str(currency)
 
-	# Находим HUD
 	if hud_path and has_node(hud_path):
 		hud_node = get_node(hud_path)
-		print("HUD найден: ", hud_node.name)
 
 	emit_signal("health_changed", current_health, max_health)
 	emit_signal("currency_changed", currency)
 
-	# Инвентарь
 	if inventory_path and has_node(inventory_path):
 		inventory_node = get_node(inventory_path)
-		print("Инвентарь найден: ", inventory_node.name)
 		call_deferred("_ensure_stats_panel_found")
 
-	# PickupZone сигналы
 	_connect_pickup_signals()
 
-	# Атака
 	attack_range.body_entered.connect(Callable(self, "_on_attack_range_body_entered"))
 	attack_range.body_exited.connect(Callable(self, "_on_attack_range_body_exited"))
 	hit_box.area_entered.connect(Callable(self, "_on_hit_box_area_entered"))
 
-# ЗАГРУЗКА ДАННЫХ ИЗ СОХРАНЕНИЯ
 func load_saved_data():
 	if save_system:
 		var player_data = save_system.get_player_data()
 		
-		# Загружаем валюту
 		if "currency" in player_data:
 			currency = player_data["currency"]
-			print("Загружена валюта из сохранения: ", currency)
 		else:
 			currency = 0
-			print("Валюта не найдена в сохранении, установлено 0")
 		
-		# Загружаем здоровье
 		if "health" in player_data:
 			current_health = player_data["health"]
-			print("Загружено здоровье из сохранения: ", current_health)
 		else:
 			current_health = max_health
 		
-		# Загружаем максимальное здоровье
 		if "max_health" in player_data:
 			max_health = player_data["max_health"]
-			print("Загружено максимальное здоровье: ", max_health)
 		
-		# Загружаем урон
 		if "damage" in player_data:
 			attack_damage = player_data["damage"]
-			print("Загружен урон из сохранения: ", attack_damage)
 		
-		# Загружаем позицию (опционально)
 		if "position_x" in player_data and "position_y" in player_data:
 			var saved_position = Vector2(player_data["position_x"], player_data["position_y"])
 			if saved_position != Vector2.ZERO:
 				global_position = saved_position
-				print("Загружена позиция из сохранения: ", saved_position)
 	else:
-		print("SaveSystem не найден, используем значения по умолчанию")
 		current_health = max_health
 		currency = 0
+
+func update_save_data():
+	if save_system:
+		save_system.update_player_data(self)
+
+func apply_upgrade(health_bonus: int, damage_bonus: int, cost: int) -> bool:
+	if currency >= cost:
+		currency -= cost
+		max_health += health_bonus
+		current_health += health_bonus
+		attack_damage += damage_bonus
+		
+		if health_bar:
+			health_bar.max_value = max_health
+			health_bar.value = current_health
+		
+		if currency_label:
+			currency_label.text = str(currency)
+		
+		emit_signal("health_changed", current_health, max_health)
+		emit_signal("currency_changed", currency)
+		
+		update_save_data()
+		
+		return true
+	else:
+		return false
 
 func _ensure_stats_panel_found():
 	if inventory_node:
 		stats_panel = inventory_node.get_node_or_null("StatsPanel")
-		if stats_panel:
-			print("StatsPanel найден и готов к обновлению")
-		else:
-			print("StatsPanel не найден!")
 
 func _connect_pickup_signals():
 	for child in get_children():
@@ -130,31 +131,23 @@ func _connect_pickup_signals():
 			if child.body_entered.is_connected(Callable(self, "_on_pickup_zone_body_entered")):
 				child.body_entered.disconnect(Callable(self, "_on_pickup_zone_body_entered"))
 			child.body_entered.connect(Callable(self, "_on_pickup_zone_body_entered"))
-			print("Сигнал PickupZone подключен")
 			return
-	print("Внимание: PickupZone не найден для подключения сигналов!")
 
 func _input(event):
-	# Открытие/закрытие инвентаря
 	if event.is_action_pressed("inventory") and inventory_node:
 		inventory_node.visible = not inventory_node.visible
 		can_move = not inventory_node.visible
 
-		# HUD скрывается при открытии инвентаря и показывается при закрытии
 		if hud_node:
 			hud_node.visible = not inventory_node.visible
 
-		# Обновляем StatsPanel при открытии
 		if inventory_node.visible:
 			_refresh_inventory_stats()
 	
-	# Быстрое сохранение по F5
-	if event.is_action_pressed("ui_select") and save_system:  # F5
+	if event.is_action_pressed("ui_select") and save_system:
 		save_system.save_game(self)
-		print("Быстрое сохранение по F5")
 	
-	# Выход в меню по ESC
-	if event.is_action_pressed("ui_cancel"):  # Escape
+	if event.is_action_pressed("ui_cancel"):
 		return_to_main_menu()
 
 func _physics_process(delta: float):
@@ -273,6 +266,8 @@ func _on_hit_box_area_entered(area):
 func _on_pickup_zone_body_entered(body):
 	if body.is_in_group("item_drop") and body.has_method("pick_up_item"):
 		body.pick_up_item(self)
+	if body.is_in_group("crystals") and body.has_method("pick_up"):
+		body.pick_up(self)
 
 func take_damage(damage: float) -> void:
 	current_health = max(current_health - damage, 0)
@@ -293,7 +288,6 @@ func heal(amount: float) -> void:
 	_refresh_inventory_stats()
 
 func die() -> void:
-	print("Игрок умер")
 	emit_signal("player_died")
 	anim_player.play("Death")
 	set_physics_process(false)
@@ -304,33 +298,54 @@ func _auto_pick_item(item):
 	if not is_instance_valid(item):
 		return
 	
-	print("Подбираем предмет: ", item.item_name)
-	
 	if item.item_name == "Trash":
 		currency += 10
 		
 		if currency_label:
 			currency_label.text = str(currency)
 		
-		print("Подобран Trash! Валюта:", currency)
-		
-		# Обновляем в SaveSystem
 		if save_system:
 			save_system.add_currency(10)
 		
 		emit_signal("currency_changed", currency)
+	elif item.item_name == "Crystal":
+		_auto_pick_crystal(item)
+		return
 	
 	_refresh_inventory_stats()
 	item.queue_free()
 
-# Статистика для StatsPanel
+func _auto_pick_crystal(crystal):
+	if not is_instance_valid(crystal):
+		return
+	
+	if inventory_node and inventory_node.has_method("add_item"):
+		inventory_node.add_item("Crystal", 1)
+		_show_pickup_notification("Кристалл +1")
+	else:
+		print("Ошибка: инвентарь не найден!")
+	
+	_refresh_inventory_stats()
+	crystal.queue_free()
+
+func _show_pickup_notification(text: String):
+	var notification = Label.new()
+	notification.text = text
+	notification.modulate = Color(1, 1, 1, 1)
+	notification.position = Vector2(global_position.x, global_position.y - 50)
+	get_parent().add_child(notification)
+	
+	var tween = create_tween()
+	tween.tween_property(notification, "position:y", notification.position.y - 30, 0.5)
+	tween.parallel().tween_property(notification, "modulate:a", 0, 0.5)
+	
+	await get_tree().create_timer(1.0).timeout
+	notification.queue_free()
+
 func _refresh_inventory_stats():
 	if stats_panel:
 		stats_panel.refresh_stats()
-	else:
-		print("Не могу обновить статистику: StatsPanel всё ещё не найден")
 
-# Методы для StatsPanel
 func get_player_health() -> String:
 	return str(int(current_health)) + "/" + str(int(max_health))
 
@@ -340,25 +355,12 @@ func get_player_damage() -> int:
 func get_player_currency() -> int:
 	return currency
 
-# Выход в главное меню
 func return_to_main_menu():
-	print("=== ВОЗВРАТ В ГЛАВНОЕ МЕНЮ ===")
-	
-	# Сохраняем игру перед выходом
 	if save_system:
 		save_system.save_game(self)
-		print("Игра сохранена перед выходом в меню")
-	else:
-		print("Предупреждение: SaveSystem не найден, сохранение не выполнено")
-	
-	# Ждем немного для эффекта
 	await get_tree().create_timer(0.3).timeout
-	
-	# Загружаем главное меню
 	get_tree().change_scene_to_file("res://scenes/menu/menu.tscn")
 
-# Метод для быстрого сохранения (можно вызвать из других скриптов)
 func quick_save():
 	if save_system:
 		save_system.save_game(self)
-		print("Быстрое сохранение выполнено")

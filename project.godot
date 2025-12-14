@@ -69,7 +69,11 @@ audio/channel_defaults={
 }
 variables={
 "EnemyFall": false,
-"player_currency": ""
+"current_crystal_cost": 0,
+"current_upgrade_cost": 0,
+"player_crystals": 0,
+"player_currency": 0,
+"upgrade_level": 0
 }
 glossary/default_case_sensitive=true
 layout/style_list=[]

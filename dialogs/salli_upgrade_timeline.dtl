@@ -1,5 +1,5 @@
 Sally: Привет, улучшить тебя?
-- Улучшить меня! (50 валюты) | [if {player_currency} >= 50.0] [else="disable" alt_text="Прокачай меня!"]
+- Привет! Я могу улучшить тебя за {current_upgrade_cost} валюты и {current_crystal_cost} кристаллов.(Твой уровень прокачки: {upgrade_level}) | [if {player_currency} >= {current_upgrade_cost} and {player_crystals} >= {current_crystal_cost}] [else="hide" alt_text="Прокачай меня!"]
 	[signal arg="buy_upgrade"]
 	Sally: Отличный выбор! Чувствуешь прилив сил?
 - Мне нужно подумать..

@@ -9,8 +9,10 @@ enum State { IDLE, CHASE, ATTACK, HURT, DEATH }
 @export var detection_range: float = 300.0
 @export var attack_cooldown: float = 1.0
 @export var gravity: float = 800.0
-@export var health_bar_path: NodePath = "HealthBar" # путь к TextureProgressBar
+@export var health_bar_path: NodePath = "HealthBar"
 @export var item_drop_scene: PackedScene
+@export var crystal_drop_scene: PackedScene
+@export var crystal_drop_chance: float = 0.25  # 25% шанс
 
 var current_health: float
 var state: State = State.IDLE
@@ -44,7 +46,6 @@ func _physics_process(delta):
 	if state == State.DEATH:
 		return
 
-	# Гравитация
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	else:
@@ -64,7 +65,7 @@ func _physics_process(delta):
 	match state:
 		State.IDLE:
 			anim_player.play("Idle")
-			velocity.x = 0  # остановка при Idle
+			velocity.x = 0
 		State.CHASE:
 			state_chase(delta)
 		State.ATTACK:
@@ -72,10 +73,8 @@ func _physics_process(delta):
 		State.HURT:
 			pass
 
-
 	move_and_slide()
 
-# ----------------- STATES -----------------
 func state_chase(delta):
 	if not player:
 		state = State.IDLE
@@ -100,7 +99,6 @@ func perform_attack():
 	velocity.x = 0
 	anim_player.play("Attack")
 
-	# Наносим урон один раз после таймера для синхронизации с анимацией
 	await get_tree().create_timer(0.3).timeout
 	apply_attack_damage()
 
@@ -113,7 +111,7 @@ func apply_attack_damage():
 	for body in attack_range_area.get_overlapping_bodies():
 		if body.is_in_group("players") and body.has_method("take_damage"):
 			body.take_damage(attack_damage)
-			break # наносим только один раз за атаку
+			break
 
 func player_in_attack_range() -> bool:
 	return player and global_position.distance_to(player.global_position) <= attack_range
@@ -130,11 +128,9 @@ func take_damage(amount: float):
 		return
 	current_health -= amount
 	current_health = max(current_health, 0)
-	print("Враг получил урон:", amount, "| HP:", current_health)
 
 	if health_bar:
 		health_bar.value = current_health
-
 
 	if current_health <= 0:
 		die()
@@ -142,13 +138,10 @@ func take_damage(amount: float):
 		state = State.HURT
 		anim_player.play("Hurt")
 		await anim_player.animation_finished
-		# После получения урона проверяем дистанцию к игроку
 		if player_in_attack_range():
 			state = State.ATTACK
 		else:
 			state = State.CHASE
-
-
 
 func die():
 	state = State.DEATH
@@ -156,14 +149,27 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Спавн предмета
+	# Всегда спавним обычный предмет
 	if item_drop_scene:
 		var item = item_drop_scene.instantiate()
 		get_parent().add_child(item)
 		item.global_position = global_position
+		print("Предмет заспавнен")
+
+	# Спавним кристалл с 25% шансом
+	if crystal_drop_scene:
+		var random_value = randf()  # Случайное число от 0.0 до 1.0
+		print("Шанс выпадения кристалла:", random_value, "/", crystal_drop_chance)
+		
+		if random_value <= crystal_drop_chance:
+			var crystal = crystal_drop_scene.instantiate()
+			get_parent().add_child(crystal)
+			crystal.global_position = global_position
+			print("🎉 Кристалл заспавнен! (шанс сработал)")
+		else:
+			print("❌ Кристалл не выпал (шанс не сработал)")
 
 	queue_free()
-
 
 func play_random_idle():
 	var idle_animations = ["Idle", "Idle2"]
