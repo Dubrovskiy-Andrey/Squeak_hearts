@@ -29,6 +29,7 @@ directories/dch_directory={
 "player": "res://dialogs/player.dch"
 }
 directories/dtl_directory={
+"salli_upgrade_timeline": "res://dialogs/salli_upgrade_timeline.dtl",
 "timeline1": "res://dialogs/timeline1.dtl"
 }
 layout/style_directory={}
@@ -66,9 +67,18 @@ audio/channel_defaults={
 }
 }
 variables={
-"EnemyFall": false
+"EnemyFall": false,
+"player_currency": ""
 }
 glossary/default_case_sensitive=true
+layout/style_list=[]
+layout/default_style=""
+translation/enabled=true
+translation/original_locale="ru"
+translation/file_mode=1
+translation/translation_folder=""
+translation/save_mode=0
+translation/add_separator=false
 
 [display]
 
@@ -145,6 +155,10 @@ interact={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":69,"key_label":0,"unicode":101,"location":0,"echo":false,"script":null)
 ]
 }
+
+[internationalization]
+
+locale/test="ru"
 
 [layer_names]
 
