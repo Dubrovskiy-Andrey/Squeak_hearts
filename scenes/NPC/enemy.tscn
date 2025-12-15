@@ -833,6 +833,7 @@ radius = 40.04997
 collision_layer = 16
 script = ExtResource("1_w147c")
 crystal_drop_scene = ExtResource("2_ujbwi")
+crystal_drop_chance = 1.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -66)

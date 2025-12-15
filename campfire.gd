@@ -23,7 +23,7 @@ func _on_body_entered(body):
 		player_in_range = true
 		
 		if hint_label:
-			hint_label.text = "Нажми E чтобы отдохнуть и сохраниться"
+			hint_label.text = "Нажми E для сохранения"
 			hint_label.visible = true
 
 func _on_body_exited(body):
@@ -74,7 +74,7 @@ func save_game_at_campfire():
 		
 		if save_system:
 			# Передаем ID костра вторым аргументом
-			save_system.save_game(player, campfire_id)
+			save_system.save_game(player)
 			print("Игра сохранена через SaveSystem")
 		else:
 			print("Ошибка: SaveSystem не найден!")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://ifqvg5jaythd"]
+[gd_scene load_steps=16 format=3 uid="uid://ifqvg5jaythd"]
 
 [ext_resource type="Script" uid="uid://b5so26xtf36br" path="res://scenes/scripts/UI/inventory.gd" id="1_5yy05"]
 [ext_resource type="Texture2D" uid="uid://bar1bbkf3tr5k" path="res://assets/Inventory1.png" id="2_5yy05"]
@@ -7,9 +7,53 @@
 [ext_resource type="Script" uid="uid://ds2xjrxiipei7" path="res://scenes/scripts/Items/TalismanSlot.gd" id="5_bfvro"]
 [ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="5_ulvp7"]
 [ext_resource type="Script" uid="uid://cakp58l6mqvh4" path="res://scenes/ui/stats_panel.gd" id="6_weae1"]
+[ext_resource type="Texture2D" uid="uid://yxm8q3wf7iro" path="res://assets/Sprite-0001.png" id="8_vj5ws"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5yy05"]
 texture = ExtResource("2_xeaml")
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i8fht"]
+atlas = ExtResource("8_vj5ws")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5suo7"]
+atlas = ExtResource("8_vj5ws")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u3v1c"]
+atlas = ExtResource("8_vj5ws")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hjfas"]
+atlas = ExtResource("8_vj5ws")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q8qhs"]
+atlas = ExtResource("8_vj5ws")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_map31"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i8fht")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5suo7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u3v1c")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hjfas")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q8qhs")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="Inventory" type="Node2D"]
 script = ExtResource("1_5yy05")
@@ -62,29 +106,26 @@ theme_override_fonts/font = ExtResource("5_ulvp7")
 theme_override_font_sizes/font_size = 60
 text = "0"
 
-[node name="TalismanSlots" type="VBoxContainer" parent="LeftPanel"]
-layout_mode = 1
+[node name="TalismanSlots" type="GridContainer" parent="LeftPanel"]
+layout_mode = 0
 offset_left = 527.0
-offset_top = 166.0
-offset_right = 689.0
+offset_top = 164.0
+offset_right = 688.0
 offset_bottom = 694.0
-theme_override_constants/separation = 25
-alignment = 1
+theme_override_constants/v_separation = 25
 
 [node name="TalismanSlot1" type="Panel" parent="LeftPanel/TalismanSlots"]
-custom_minimum_size = Vector2(150, 160)
+custom_minimum_size = Vector2(160, 160)
 layout_mode = 2
 script = ExtResource("5_bfvro")
-is_equip_slot = true
 
 [node name="TalismanSlot2" type="Panel" parent="LeftPanel/TalismanSlots"]
-custom_minimum_size = Vector2(150, 160)
+custom_minimum_size = Vector2(160, 160)
 layout_mode = 2
-size_flags_vertical = 8
 script = ExtResource("5_bfvro")
 
 [node name="TalismanSlot3" type="Panel" parent="LeftPanel/TalismanSlots"]
-custom_minimum_size = Vector2(150, 160)
+custom_minimum_size = Vector2(160, 160)
 layout_mode = 2
 script = ExtResource("5_bfvro")
 
@@ -394,11 +435,20 @@ offset_right = 1829.0
 offset_bottom = 995.0
 
 [node name="BackpackButton" type="Button" parent="TabButtons"]
+modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(490, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 
 [node name="TalismansButton" type="Button" parent="TabButtons"]
+modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(490, 0)
 layout_mode = 2
 size_flags_horizontal = 10
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(186, 417.00003)
+scale = Vector2(8.9453125, 8.9453125)
+sprite_frames = SubResource("SpriteFrames_map31")
+autoplay = "default"
+frame_progress = 0.6440531
