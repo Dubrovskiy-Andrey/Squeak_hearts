@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://dtncl4mb1151j"]
+
+[ext_resource type="Texture2D" uid="uid://dmcwsrc7u4g3e" path="res://assets/NPC_Scrip.png" id="1_pfjq4"]
+[ext_resource type="Script" uid="uid://b0ak8f6r60a7n" path="res://scenes/NPC/trader_npc.gd" id="1_yp7ol"]
+[ext_resource type="PackedScene" uid="uid://1vdmgis6fw8x" path="res://scenes/NPC/trade_window.tscn" id="2_h0660"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yp7ol"]
+atlas = ExtResource("1_pfjq4")
+region = Rect2(0, 0, 72, 87)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6hdrh"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yp7ol")
+}],
+"loop": true,
+"name": &"IDLE",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jqsrc"]
+radius = 72.00694
+
+[node name="TraderNPC" type="Area2D"]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_yp7ol")
+trade_window_scene = ExtResource("2_h0660")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(8.999998, -63.000008)
+scale = Vector2(1.7083335, 1.7083333)
+sprite_frames = SubResource("SpriteFrames_6hdrh")
+animation = &"IDLE"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -69)
+shape = SubResource("CircleShape2D_jqsrc")
+
+[node name="Label" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0

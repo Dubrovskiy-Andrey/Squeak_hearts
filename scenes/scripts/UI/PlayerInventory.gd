@@ -8,9 +8,7 @@ var inventory = {
 }
 
 var talisman_inventory = {
-	0: ["RingOfHealth", 1],
-	1: ["RingOfDamage", 1],
-	2: ["RingOfBalance", 1]
+
 }
 
 signal inventory_changed
@@ -142,13 +140,25 @@ func spend_crystals(amount: int) -> bool:
 	
 	return false
 
-func add_talisman(talisman_name: String):
+func save_talismans_to_save_system():
+	if save_system:
+		var inventory_data = save_inventory_data()
+		save_system.save_data["inventory_data"] = inventory_data
+		print("💾 Талисманы сохранены в save_system")
+
+# Добавить в функцию add_talisman после добавления:
+func add_talisman(talisman_name: String) -> bool:
 	for i in range(NUM_TALISMAN_SLOTS):
 		if not talisman_inventory.has(i):
 			talisman_inventory[i] = [talisman_name, 1]
 			talisman_inventory_changed.emit()
+			
+			# СРАЗУ СОХРАНЯЕМ В save_system
+			save_talismans_to_save_system()
+			
 			return true
 	return false
+
 
 func get_talisman_count() -> int:
 	return talisman_inventory.size()
@@ -184,9 +194,6 @@ func reset_for_new_game():
 	}
 	
 	talisman_inventory = {
-		0: ["RingOfHealth", 1],
-		1: ["RingOfDamage", 1],
-		2: ["RingOfBalance", 1]
 	}
 	
 	inventory_changed.emit()

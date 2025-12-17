@@ -27,11 +27,13 @@ SettingsManager="*res://SettingsManager.gd"
 
 directories/dch_directory={
 "Sally": "res://dialogs/Sally.dch",
+"Scrip": "res://dialogs/Scrip.dch",
 "player": "res://dialogs/player.dch"
 }
 directories/dtl_directory={
 "salli_upgrade_timeline": "res://dialogs/salli_upgrade_timeline.dtl",
-"timeline1": "res://dialogs/timeline1.dtl"
+"timeline1": "res://dialogs/timeline1.dtl",
+"trader_greeting_timeline": "res://dialogs/trader_greeting_timeline.dtl"
 }
 layout/style_directory={}
 extensions_folder="res://addons/dialogic_additions"

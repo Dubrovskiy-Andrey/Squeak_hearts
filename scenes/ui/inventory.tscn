@@ -67,44 +67,45 @@ texture = ExtResource("2_5yy05")
 expand_mode = 1
 
 [node name="LeftPanel" type="Panel" parent="."]
-offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="StatsPanel" type="Control" parent="LeftPanel"]
 anchors_preset = 0
-offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("6_weae1")
 
 [node name="HealthLabel" type="Label" parent="LeftPanel/StatsPanel"]
 layout_mode = 0
-offset_left = 179.0
+offset_left = 129.0
 offset_top = 859.0
-offset_right = 224.0
+offset_right = 174.0
 offset_bottom = 907.0
 theme_override_fonts/font = ExtResource("5_ulvp7")
-theme_override_font_sizes/font_size = 60
-text = "90"
+theme_override_font_sizes/font_size = 50
+text = "1000/1000"
+horizontal_alignment = 1
 
 [node name="DamageLabel" type="Label" parent="LeftPanel/StatsPanel"]
 layout_mode = 0
-offset_left = 382.0
-offset_top = 864.0
-offset_right = 427.0
-offset_bottom = 912.0
+offset_left = 386.0
+offset_top = 859.0
+offset_right = 453.0
+offset_bottom = 907.0
 theme_override_fonts/font = ExtResource("5_ulvp7")
-theme_override_font_sizes/font_size = 60
-text = "10"
+theme_override_font_sizes/font_size = 50
+text = "100"
+horizontal_alignment = 1
 
 [node name="CurrencyLabel" type="Label" parent="LeftPanel/StatsPanel"]
 layout_mode = 0
-offset_left = 593.0
-offset_top = 863.0
-offset_right = 633.0
-offset_bottom = 911.0
+offset_left = 634.0
+offset_top = 858.0
+offset_right = 724.0
+offset_bottom = 906.0
 theme_override_fonts/font = ExtResource("5_ulvp7")
-theme_override_font_sizes/font_size = 60
-text = "0"
+theme_override_font_sizes/font_size = 50
+text = "1000"
+horizontal_alignment = 1
 
 [node name="TalismanSlots" type="GridContainer" parent="LeftPanel"]
 layout_mode = 0
@@ -130,12 +131,10 @@ layout_mode = 2
 script = ExtResource("5_bfvro")
 
 [node name="RightPanel" type="Panel" parent="."]
-offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="BackpackPanel" type="Panel" parent="RightPanel"]
 layout_mode = 0
-offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="BackpackGrid" type="GridContainer" parent="RightPanel/BackpackPanel"]
@@ -447,8 +446,17 @@ layout_mode = 2
 size_flags_horizontal = 10
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-position = Vector2(186, 417.00003)
+position = Vector2(184.00002, 391)
 scale = Vector2(8.9453125, 8.9453125)
 sprite_frames = SubResource("SpriteFrames_map31")
 autoplay = "default"
-frame_progress = 0.6440531
+frame_progress = 0.008025381
+
+[node name="Label3" type="Label" parent="."]
+offset_left = 57.0
+offset_top = 182.0
+offset_right = 451.0
+offset_bottom = 276.0
+theme_override_font_sizes/font_size = 60
+text = "Стюарт"
+horizontal_alignment = 1

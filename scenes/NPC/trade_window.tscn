@@ -1,0 +1,151 @@
+[gd_scene load_steps=7 format=3 uid="uid://1vdmgis6fw8x"]
+
+[ext_resource type="Script" uid="uid://b3jekrxqed4ug" path="res://trade_window.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://ds62m4i5hokc1" path="res://scenes/NPC/trade_slot.tscn" id="2"]
+[ext_resource type="Texture2D" uid="uid://5npe7iddyo3l" path="res://assets/Trade_Window.png" id="3_sm7td"]
+[ext_resource type="Texture2D" uid="uid://dgvccqc6km3h5" path="res://assets/ArrowSlot.png" id="4_sm7td"]
+[ext_resource type="Texture2D" uid="uid://bgn6qqwpdxs5u" path="res://assets/Items_icon/trash.png" id="4_u0h6c"]
+[ext_resource type="Texture2D" uid="uid://be3vjth3y58fm" path="res://assets/Items_icon/crystal.png" id="5_y08kn"]
+
+[node name="TradeWindow" type="Node2D"]
+script = ExtResource("1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(800, 1090)
+offset_right = 800.0
+offset_bottom = 1090.0
+texture = ExtResource("3_sm7td")
+
+[node name="MainContainer" type="HBoxContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 77.0
+offset_top = 119.0
+offset_right = 727.0
+offset_bottom = 967.0
+theme_override_constants/separation = 287
+
+[node name="LeftGrid" type="GridContainer" parent="TextureRect/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 8
+
+[node name="LeftSlot1" parent="TextureRect/MainContainer/LeftGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="LeftSlot2" parent="TextureRect/MainContainer/LeftGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="LeftSlot3" parent="TextureRect/MainContainer/LeftGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="LeftSlot4" parent="TextureRect/MainContainer/LeftGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="LeftSlot5" parent="TextureRect/MainContainer/LeftGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="RightGrid" type="GridContainer" parent="TextureRect/MainContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/v_separation = 8
+
+[node name="RightSlot1" parent="TextureRect/MainContainer/RightGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="RightSlot2" parent="TextureRect/MainContainer/RightGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="RightSlot3" parent="TextureRect/MainContainer/RightGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="RightSlot4" parent="TextureRect/MainContainer/RightGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="RightSlot5" parent="TextureRect/MainContainer/RightGrid" instance=ExtResource("2")]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="BottomPanel" type="HBoxContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 243.0
+offset_top = 962.0
+offset_right = 689.0
+offset_bottom = 1022.0
+theme_override_constants/separation = 0
+
+[node name="StatsPanel" type="HBoxContainer" parent="TextureRect/BottomPanel"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_constants/separation = 8
+
+[node name="TrashIcon" type="TextureRect" parent="TextureRect/BottomPanel/StatsPanel"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("4_u0h6c")
+
+[node name="CurrencyLabel" type="Label" parent="TextureRect/BottomPanel/StatsPanel"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+text = "Валюта: "
+vertical_alignment = 1
+
+[node name="CrystalIcon" type="TextureRect" parent="TextureRect/BottomPanel/StatsPanel"]
+custom_minimum_size = Vector2(60, 60)
+layout_mode = 2
+texture = ExtResource("5_y08kn")
+
+[node name="CrystalsLabel" type="Label" parent="TextureRect/BottomPanel/StatsPanel"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 3
+text = "Кристаллы: "
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="TextureRect/BottomPanel"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+text = "Закрыть"
+
+[node name="ArrowGrid" type="GridContainer" parent="TextureRect"]
+layout_mode = 0
+offset_left = 325.0
+offset_top = 163.0
+offset_right = 457.0
+offset_bottom = 951.0
+theme_override_constants/v_separation = 97
+
+[node name="Arrow1" type="TextureRect" parent="TextureRect/ArrowGrid"]
+layout_mode = 2
+texture = ExtResource("4_sm7td")
+
+[node name="Arrow2" type="TextureRect" parent="TextureRect/ArrowGrid"]
+layout_mode = 2
+texture = ExtResource("4_sm7td")
+
+[node name="Arrow3" type="TextureRect" parent="TextureRect/ArrowGrid"]
+layout_mode = 2
+texture = ExtResource("4_sm7td")
+
+[node name="Arrow4" type="TextureRect" parent="TextureRect/ArrowGrid"]
+layout_mode = 2
+texture = ExtResource("4_sm7td")
+
+[node name="Arrow5" type="TextureRect" parent="TextureRect/ArrowGrid"]
+layout_mode = 2
+texture = ExtResource("4_sm7td")

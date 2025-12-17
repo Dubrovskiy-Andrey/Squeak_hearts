@@ -77,5 +77,27 @@
 	  "SpeedBonus": 0
 	},
 	"Description": "Кольцо баланса. Увеличивает здоровье на 25 и урон на 5."
+  },
+
+  "RingOfSpeed": {
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 0,
+	  "DamageBonus": 0,
+	  "SpeedBonus": 20
+	},
+	"Description": "Кольцо скорости. Увеличивает скорость передвижения на 20%."
+  },
+
+  "RingOfSwiftStrike": {
+	"ItemCategory": "Talisman",
+	"StackSize": 1,
+	"Stats": {
+	  "HPBonus": 0,
+	  "DamageBonus": 5,
+	  "SpeedBonus": 15
+	},
+	"Description": "Кольцо быстрого удара. Увеличивает скорость на 15% и урон на 5."
   }
 }

@@ -120,3 +120,16 @@ func _find_inventory():
 func add_currency(amount: int):
 	var current: int = save_data["player_data"].get("currency", 0)
 	save_data["player_data"]["currency"] = current + amount
+
+# ---------------------- Торговец ----------------------
+func get_trader_items() -> Array:
+	return save_data.get("npc_items_trader", [])
+
+func set_trader_items(items: Array):
+	save_data["npc_items_trader"] = items.duplicate(true)
+
+func get_purchased_items() -> Dictionary:
+	return save_data.get("purchased_items", {})
+
+func set_purchased_items(items: Dictionary):
+	save_data["purchased_items"] = items.duplicate(true)

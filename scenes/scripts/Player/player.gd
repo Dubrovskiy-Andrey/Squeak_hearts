@@ -28,6 +28,7 @@ var currency: int = 0
 var talisman_hp_bonus: int = 0
 var talisman_damage_bonus: int = 0
 var talisman_speed_bonus: int = 0
+var talisman_cooldown_bonus: int = 0
 
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -243,7 +244,14 @@ func start_attack() -> void:
 	_apply_attack_damage()
 	
 	await anim_player.animation_finished
-	await get_tree().create_timer(attack_cooldown).timeout
+	
+	# Рассчитываем КД с учетом бонуса от талисманов
+	var actual_cooldown = attack_cooldown
+	if talisman_cooldown_bonus > 0:
+		actual_cooldown = attack_cooldown * (1.0 - talisman_cooldown_bonus / 100.0)
+		actual_cooldown = max(actual_cooldown, 0.1)  # Минимальный КД 0.1 секунды
+	
+	await get_tree().create_timer(actual_cooldown).timeout
 	
 	is_attacking = false
 	can_attack = true
@@ -289,13 +297,13 @@ func _auto_pick_item(item):
 		return
 	
 	if item.item_name == "Trash":
-		currency += 10
+		currency += 1000
 		
 		if currency_label:
 			currency_label.text = str(currency)
 		
 		if save_system:
-			save_system.add_currency(10)
+			save_system.add_currency(1000)
 		
 		emit_signal("currency_changed", currency)
 		_refresh_inventory_stats()
@@ -310,7 +318,7 @@ func _auto_pick_crystal(crystal):
 	if not is_instance_valid(crystal):
 		return
 	
-	PlayerInventory.add_item("Crystal", 1)
+	PlayerInventory.add_item("Crystal", 10)
 	_show_pickup_notification("Кристалл +1")
 	
 	_refresh_inventory_stats()
@@ -400,3 +408,11 @@ func return_to_main_menu():
 func quick_save():
 	if save_system:
 		save_system.save_game(self)
+
+func set_can_move(value: bool):
+	can_move = value
+	if not can_move:
+		velocity = Vector2.ZERO
+		state = State.IDLE
+		anim_player.play("Idle")
+	print("Движение игрока:", "разблокировано" if value else "заблокировано")

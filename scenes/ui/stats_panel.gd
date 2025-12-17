@@ -61,7 +61,10 @@ func _periodic_check():
 
 func refresh_stats():
 	if player_node == null:
-		return
+		# Пробуем найти игрока снова
+		player_node = get_tree().get_first_node_in_group("players")
+		if player_node == null:
+			return
 	
 	# Используем существующие методы игрока
 	if health_label:
@@ -70,3 +73,8 @@ func refresh_stats():
 		damage_label.text = str(player_node.get_player_damage())
 	if currency_label:
 		currency_label.text = str(player_node.get_player_currency())
+	
+	print("📊 StatsPanel обновлен:", 
+		"HP:", player_node.get_player_health() if health_label else "N/A",
+		"DMG:", player_node.get_player_damage() if damage_label else "N/A",
+		"Trash:", player_node.get_player_currency() if currency_label else "N/A")

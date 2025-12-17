@@ -1,0 +1,46 @@
+[gd_scene load_steps=3 format=3 uid="uid://ds62m4i5hokc1"]
+
+[ext_resource type="Script" uid="uid://cpvq2hjs7xc43" path="res://trade_slot.gd" id="1_lhv7b"]
+[ext_resource type="Texture2D" uid="uid://d1c2wl0wof0dk" path="res://assets/slot.png" id="2_trtex"]
+
+[node name="TradeSlot" type="Panel"]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 100.0
+offset_bottom = 100.0
+script = ExtResource("1_lhv7b")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2_trtex")
+
+[node name="AmountLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 32.0
+offset_top = 18.0
+offset_right = 52.0
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "1"
+
+[node name="PriceLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -14.0
+offset_top = 24.0
+offset_right = 14.0
+offset_bottom = 47.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "100"
