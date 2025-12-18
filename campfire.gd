@@ -45,17 +45,19 @@ func interact_with_campfire():
 	if not player_in_range or not can_interact:
 		return
 	
-	print("🔥 Взаимодействие с костром (с восстановлением)")
+	print("🔥 Взаимодействие с костром")
 	can_interact = false
 	
 	show_interaction_effect()
-	heal_player()           # Восстанавливаем HP
-	restore_player_cheese() # Восстанавливаем сыр
-	save_game_at_campfire() # Сохраняем игру
+	heal_player()
+	restore_player_cheese()
+	save_and_restore_at_campfire()
 	
 	await get_tree().create_timer(0.5).timeout
 	
-	print("🔄 Перезагрузка локации...")
+	print("🔄 ПЕРЕЗАГРУЗКА локации...")
+	
+	# Перезагружаем сцену
 	get_tree().reload_current_scene()
 
 func heal_player():
@@ -74,16 +76,28 @@ func restore_player_cheese():
 			player.restore_all_cheese()
 			print("🧀 Сыр игрока восстановлен у костра")
 
-func save_game_at_campfire():
-	print("💾 Сохранение игры у костра...")
+func save_and_restore_at_campfire():
+	print("💾 Сохранение и восстановление у костра...")
 	
 	var players = get_tree().get_nodes_in_group("players")
 	if players.size() > 0:
 		var player = players[0]
 		
 		if save_system:
+			# 1. Сначала сохраняем игру как костёрное сохранение
+			save_system.campfire_save(player, campfire_id)
+			print("✅ Игра сохранена как костёрное сохранение")
+			
+			# 2. ОЧЕНЬ ВАЖНО: Очищаем убитых врагов и собранные предметы
+			print("🧹 Очищаем списки убитых врагов и предметов для респавна...")
+			if save_system.save_data.has("enemies_killed"):
+				save_system.save_data["enemies_killed"].clear()
+			if save_system.save_data.has("items_collected"):
+				save_system.save_data["items_collected"].clear()
+			
+			# 3. Сохраняем очищенное состояние в файл
 			save_system.save_game(player)
-			print("✅ Игра сохранена через SaveSystem")
+			print("💾 Очищенное состояние сохранено в файл")
 		else:
 			print("❌ Ошибка: SaveSystem не найден!")
 

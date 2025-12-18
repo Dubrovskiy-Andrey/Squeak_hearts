@@ -17,8 +17,10 @@ var current_brightness: float = 1.0
 var current_volume: float = 0.8
 var new_game_dialog: ConfirmationDialog = null
 
+@onready var save_system: Node = get_node("/root/save_system")
+
 func _ready():
-	print("=== ИНИЦИАЛИЗАЦИЯ МЕНЮ ===")
+	print("ИНИЦИАЛИЗАЦИЯ МЕНЮ")
 	_create_dark_overlay()
 	_load_settings()
 	_check_save_file()
@@ -26,7 +28,7 @@ func _ready():
 	_init_settings_popup()
 	_apply_brightness(current_brightness)
 	_apply_volume(current_volume)
-	print("✅ Меню готово")
+	print("Меню готово")
 
 func _create_dark_overlay():
 	dark_overlay = get_node_or_null("DarkOverlay")
@@ -207,46 +209,31 @@ func _on_new_game_button_pressed():
 		new_game_dialog.get_ok_button().text = "ДА"
 		new_game_dialog.get_cancel_button().text = "НЕТ"
 		new_game_dialog.confirmed.connect(func():
+			print("🧹 Очищаем сохранение для новой игры")
 			save_system.clear_save()
 			if PlayerInventory:
 				PlayerInventory.reset_for_new_game()
-			var player = get_tree().get_first_node_in_group("players")
-			if player:
-				player.currency = 0
-				player.current_health = player.max_health
-				player.attack_damage = 20
-				player.talisman_hp_bonus = 0
-				player.talisman_damage_bonus = 0
-				player.talisman_speed_bonus = 0
-				player._refresh_inventory_stats()
-				player.update_save_data()
 			get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
 		)
 		add_child(new_game_dialog)
 		new_game_dialog.popup_centered()
 	else:
+		print("🎮 Начинаем новую игру без сохранения")
 		if PlayerInventory:
 			PlayerInventory.reset_for_new_game()
-		var player = get_tree().get_first_node_in_group("players")
-		if player:
-			player.currency = 0
-			player.current_health = player.max_health
-			player.attack_damage = 20
-			player.talisman_hp_bonus = 0
-			player.talisman_damage_bonus = 0
-			player.talisman_speed_bonus = 0
-			player._refresh_inventory_stats()
-			player.update_save_data()
 		get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
 
 func _on_continue_game_button_pressed():
 	if save_system and save_system.has_save():
+		print("📂 Меню: Загружаем сохранение перед переходом в сцену")
+		save_system.load_game()  # ЗАГРУЖАЕМ СОХРАНЕНИЕ ЗДЕСЬ
 		var scene = save_system.get_saved_scene_path()
 		if scene != "" and ResourceLoader.exists(scene):
 			get_tree().change_scene_to_file(scene)
 		else:
 			get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
 	else:
+		print("⚠️ Сохранение не найдено, начинаем новую игру")
 		get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
 
 func _on_settings_button_pressed():

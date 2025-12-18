@@ -7,16 +7,26 @@ var save_data := {
 	"inventory_data": {},
 	"talisman_data": {"equipped_talismans": ["", "", ""]},
 	"npc_data": {},
-	"scene_name": ""
+	"scene_name": "",
+	"last_save_type": "manual",
+	"campfire_id": "",
+	"enemies_killed": {},
+	"items_collected": {},
+	"campfire_restore_points": {}
 }
 
 func _ready():
-	print("Save system готово")
+	print("save_system готов")
 
-# ---------------------- Сохранение игры ----------------------
 func save_game(player: Node = null):
+	print("💾 save_game вызван")
+	print("💾 player: ", player)
+	
 	if player:
+		print("💾 Перед update_player_data, сыр: ", player.cheese_bites)
 		update_player_data(player)
+	
+	print("💾 После update_player_data, save_data сыр: ", save_data["player_data"].get("cheese_bites", []))
 	
 	if PlayerInventory:
 		save_data["inventory_data"] = PlayerInventory.save_inventory_data()
@@ -33,89 +43,178 @@ func save_game(player: Node = null):
 				arr[i] = equipped[i]["name"]
 		save_data["talisman_data"]["equipped_talismans"] = arr
 	
-	var f = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if f:
-		f.store_var(save_data)
-		f.close()
-		print("Игра сохранена")
+	print("💾 Сохраняем данные: ", save_data.keys())
+	print("💾 Данные игрока для сохранения: ", save_data["player_data"].keys())
+	
+	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file:
+		file.store_var(save_data)
+		file.close()
+		print("💾 Игра сохранена. Тип: ", save_data.get("last_save_type", "manual"))
+		print("💾 Сыр в сохранении: ", save_data["player_data"].get("cheese_bites", []))
+		print("💾 Все данные игрока: ", save_data["player_data"])
 	else:
-		push_error("Не удалось открыть файл для сохранения!")
+		print("❌ Ошибка открытия файла для сохранения")
 
-# ---------------------- Загрузка игры ----------------------
+func quick_save(player: Node):
+	save_data["last_save_type"] = "quick"
+	save_game(player)
+	print("⚡ Быстрое сохранение выполнено")
+
+func campfire_save(player: Node, campfire_id: String = ""):
+	save_data["last_save_type"] = "campfire"
+	save_data["campfire_id"] = campfire_id
+	
+	if campfire_id != "":
+		save_data["campfire_restore_points"][campfire_id] = {
+			"enemies_killed": save_data["enemies_killed"].duplicate(),
+			"items_collected": save_data["items_collected"].duplicate(),
+			"player_position_x": player.global_position.x,
+			"player_position_y": player.global_position.y,
+			"timestamp": Time.get_unix_time_from_system()
+		}
+	
+	save_game(player)
+	print("🔥 Сохранение у костра выполнено")
+
 func load_game():
+	print("📂 Попытка загрузки сохранения")
 	if not FileAccess.file_exists(SAVE_PATH):
-		print("Файл сохранения не найден")
+		print("📂 Файл сохранения не найден")
 		return
 	
-	var f = FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if f:
-		save_data = f.get_var()
-		f.close()
-		print("Сохранение загружено")
-		if PlayerInventory and save_data.has("inventory_data"):
-			PlayerInventory.load_inventory_data(save_data["inventory_data"])
+	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file:
+		var loaded_data = file.get_var()
+		file.close()
+		
+		print("📂 Данные загружены из файла: ", loaded_data is Dictionary)
+		
+		if loaded_data is Dictionary:
+			save_data = loaded_data
+			print("📂 Сохранение загружено")
+			print("📂 Ключи в загруженных данных: ", save_data.keys())
+			print("🧀 СЫР В ЗАГРУЖЕННОМ СОХРАНЕНИИ: ", save_data["player_data"].get("cheese_bites", []))
+			print("📂 Все данные игрока: ", save_data["player_data"])
+		else:
+			print("❌ Ошибка: некорректные данные в файле сохранения")
 	else:
-		push_error("Не удалось открыть файл для загрузки!")
+		print("❌ Ошибка открытия файла для чтения")
 
-# ---------------------- Игровые данные ----------------------
 func update_player_data(p: Node):
-	# Безопасное получение данных об игроке
+	if not p:
+		print("❌ update_player_data: player is null")
+		return
+	
+	print("💾 update_player_data вызван для: ", p)
+	print("💾 Свойства игрока: ", p.get_property_list().map(func(x): return x.name))
+	
 	var player_data = {
-		"currency": p.get("currency") if "currency" in p else 0,
-		"health": p.get("current_health") if "current_health" in p else p.get("max_health") if "max_health" in p else 100.0,
-		"max_health": p.get("max_health") if "max_health" in p else 100.0,
-		"damage": p.get("attack_damage") if "attack_damage" in p else 20,
+		"currency": p.currency if "currency" in p else 0,
+		"health": p.current_health if "current_health" in p else p.max_health if "max_health" in p else 100.0,
+		"max_health": p.max_health if "max_health" in p else 100.0,
+		"damage": p.attack_damage if "attack_damage" in p else 20,
 		"position_x": p.global_position.x,
 		"position_y": p.global_position.y
 	}
 	
-	# Добавляем данные о сыре если они есть
+	# ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ СЫРА
 	if "cheese_bites" in p:
+		print("💾 Найден cheese_bites у игрока: ", p.cheese_bites)
 		player_data["cheese_bites"] = p.cheese_bites.duplicate()
+		print("💾 СЫР СОХРАНЕН В update_player_data(): ", p.cheese_bites)
+	else:
+		print("💾 cheese_bites НЕ НАЙДЕН у игрока!")
+	
 	if "current_hit_count" in p:
 		player_data["current_hit_count"] = p.current_hit_count
 	
+	print("💾 Данные игрока перед сохранением: ", player_data)
 	save_data["player_data"] = player_data
 
 func get_player_data() -> Dictionary:
+	print("📂 get_player_data вызван")
+	print("📂 Данные в save_data: ", save_data.get("player_data", {}))
 	return save_data.get("player_data", {})
 
-# ---------------------- Талисманы ----------------------
+func mark_enemy_killed(enemy_id: String):
+	if not save_data.has("enemies_killed"):
+		save_data["enemies_killed"] = {}
+	save_data["enemies_killed"][enemy_id] = true
+
+func is_enemy_killed(enemy_id: String) -> bool:
+	return save_data.get("enemies_killed", {}).get(enemy_id, false)
+
+func mark_item_collected(item_id: String):
+	if not save_data.has("items_collected"):
+		save_data["items_collected"] = {}
+	save_data["items_collected"][item_id] = true
+
+func is_item_collected(item_id: String) -> bool:
+	return save_data.get("items_collected", {}).get(item_id, false)
+
+func clear_killed_enemies():
+	if save_data.has("enemies_killed"):
+		save_data["enemies_killed"].clear()
+
+func clear_collected_items():
+	if save_data.has("items_collected"):
+		save_data["items_collected"].clear()
+
+func restore_from_campfire(campfire_id: String = ""):
+	print("🔥 Восстановление из костра: ", campfire_id)
+	
+	if campfire_id != "" and save_data["campfire_restore_points"].has(campfire_id):
+		var restore_point = save_data["campfire_restore_points"][campfire_id]
+		save_data["enemies_killed"] = restore_point["enemies_killed"].duplicate()
+		save_data["items_collected"] = restore_point["items_collected"].duplicate()
+		print("✅ Состояние восстановлено из точки костра: ", campfire_id)
+	else:
+		print("🧹 Очищаем всех врагов и предметы для полного респавна")
+		if save_data.has("enemies_killed"):
+			save_data["enemies_killed"].clear()
+		if save_data.has("items_collected"):
+			save_data["items_collected"].clear()
+
 func get_equipped_talismans() -> Array:
 	return save_data["talisman_data"].get("equipped_talismans", ["", "", ""])
 
 func set_equipped_talismans(arr: Array):
 	save_data["talisman_data"]["equipped_talismans"] = arr
 
-# ---------------------- NPC ----------------------
 func set_npc_upgrade_level(npc_name: String, level: int):
 	save_data["npc_data"][npc_name + "_upgrade_level"] = level
 
 func get_npc_upgrade_level(npc_name: String) -> int:
 	return save_data["npc_data"].get(npc_name + "_upgrade_level", 0)
 
-# ---------------------- Файл сохранения ----------------------
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
 func clear_save():
 	if FileAccess.file_exists(SAVE_PATH):
-		var f = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-		if f:
-			f.close()
-		save_data = {
-			"player_data": {},
-			"inventory_data": {},
-			"talisman_data": {"equipped_talismans": ["", "", ""]},
-			"npc_data": {},
-			"scene_name": ""
-		}
-		print("Сохранение очищено")
-	else:
-		push_error("Файл сохранения не найден для удаления!")
+		DirAccess.remove_absolute(SAVE_PATH)
+	save_data = {
+		"player_data": {},
+		"inventory_data": {},
+		"talisman_data": {"equipped_talismans": ["", "", ""]},
+		"npc_data": {},
+		"scene_name": "",
+		"last_save_type": "manual",
+		"campfire_id": "",
+		"enemies_killed": {},
+		"items_collected": {},
+		"campfire_restore_points": {}
+	}
 
 func get_saved_scene_path() -> String:
 	return save_data.get("scene_name", "")
+
+func get_last_save_type() -> String:
+	return save_data.get("last_save_type", "manual")
+
+func get_last_campfire_id() -> String:
+	return save_data.get("campfire_id", "")
 
 func _find_inventory():
 	var root = get_tree().current_scene
@@ -125,12 +224,10 @@ func _find_inventory():
 				return n
 	return null
 
-# ---------------------- Валюта ----------------------
 func add_currency(amount: int):
 	var current: int = save_data["player_data"].get("currency", 0)
 	save_data["player_data"]["currency"] = current + amount
 
-# ---------------------- Торговец ----------------------
 func get_trader_items() -> Array:
 	return save_data.get("npc_items_trader", [])
 

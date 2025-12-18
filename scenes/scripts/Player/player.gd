@@ -1,5 +1,8 @@
 extends CharacterBody2D
 
+# Глобальные ссылки
+@onready var save_system: Node = get_node("/root/save_system")
+
 signal health_changed(current_health, max_health)
 signal player_died()
 signal currency_changed(new_amount)
@@ -22,9 +25,8 @@ enum State { IDLE, MOVE, JUMP, ATTACK, SUPER_JUMP, SUPER_LAND }
 @export var inventory_path: NodePath = "../UserInterface/Inventory"
 @export var hud_path: NodePath = "../UserInterface/HUD"
 
-# Система сыра
 @export var max_cheese: int = 3
-var cheese_bites: Array = []  # 0-пустой, 1-маленький, 2-средний, 3-полный
+var cheese_bites: Array = []
 var bites_per_cheese: int = 3
 var current_hit_count: int = 0
 
@@ -38,7 +40,6 @@ var can_move: bool = true
 var current_health: float
 var currency: int = 0
 
-# Бонусы от талисманов
 var talisman_hp_bonus: int = 0
 var talisman_damage_bonus: int = 0
 var talisman_speed_bonus: int = 0
@@ -62,20 +63,29 @@ var enemies_in_attack_range: Array = []
 var enemies_in_super_range: Array = []
 var stats_panel: Control = null
 
-# Для супер-атаки
 var is_super_jumping: bool = false
 var original_gravity: float = 0
 
 func _ready():
+	# Проверяем, найден ли save_system
+	if not save_system:
+		print("❌ save_system не найден в корне сцены!")
+		return
+	
+	print("💾 save_system найден: ", save_system != null)
+	
 	add_to_group("players")
-	load_saved_data()
 	
+	# ИНИЦИАЛИЗИРУЕМ ВСЁ С НУЛЯ сначала
 	original_gravity = gravity
+	current_health = max_health
+	currency = 0
 	_init_cheese()
-	
 	bites_per_cheese = max(1, 3 + talisman_cheese_bonus)
-	print("Для полного сыра нужно ударов: ", bites_per_cheese)
 	
+	print("🧀 Временный сыр: ", cheese_bites)
+	
+	# Инициализируем HUD с временными значениями
 	if health_bar_path and has_node(health_bar_path):
 		health_bar = get_node(health_bar_path)
 		health_bar.max_value = max_health + talisman_hp_bonus
@@ -87,7 +97,29 @@ func _ready():
 
 	if hud_path and has_node(hud_path):
 		hud_node = get_node(hud_path)
+	
+	# Ждем немного, чтобы сцена успела загрузить сохранение
+	await get_tree().create_timer(0.1).timeout
+	
+	# ТОЛЬКО ПОСЛЕ ЗАГРУЗКИ СЦЕНЫ загружаем сохранение
+	call_deferred("_delayed_load")
 
+func _delayed_load():
+	# Теперь загружаем данные из сохранения (если есть)
+	print("🧀 Начинаем загрузку сохранения игрока...")
+	load_saved_data()
+	
+	# Обновляем HUD с загруженными данными
+	if health_bar:
+		health_bar.max_value = max_health + talisman_hp_bonus
+		health_bar.value = current_health + talisman_hp_bonus
+		
+	if currency_label:
+		currency_label.text = str(currency)
+	
+	bites_per_cheese = max(1, 3 + talisman_cheese_bonus)
+	print("🧀 Финальный сыр после загрузки: ", cheese_bites)
+	
 	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
 	emit_signal("currency_changed", currency)
 	emit_cheese_changed()
@@ -96,7 +128,6 @@ func _ready():
 		inventory_node = get_node(inventory_path)
 		call_deferred("_ensure_stats_panel_found")
 
-	# Подключаем сигналы подбора
 	for child in get_children():
 		if child is Area2D and child.name == "PickupZone":
 			if child.body_entered.is_connected(_on_pickup_zone_body_entered):
@@ -110,16 +141,15 @@ func _ready():
 	if super_attack_area:
 		super_attack_area.body_entered.connect(Callable(self, "_on_super_attack_area_body_entered"))
 		super_attack_area.body_exited.connect(Callable(self, "_on_super_attack_area_body_exited"))
+	
+	print("✅ Игрок полностью инициализирован")
 
 func _init_cheese():
 	cheese_bites.clear()
-	# Начинаем с ПОЛНЫХ сыров (3 кусочка из 3)
 	for i in range(max_cheese):
-		cheese_bites.append(3)  # Полный сыр!
+		cheese_bites.append(3)
 	
 	current_hit_count = 0
-	
-	print("🧀 Инициализировано ", max_cheese, " полных сыров")
 
 func emit_cheese_changed():
 	var states = []
@@ -128,33 +158,45 @@ func emit_cheese_changed():
 	cheese_changed.emit(states)
 
 func load_saved_data():
-	if save_system:
+	if save_system and is_instance_valid(save_system):
+		print("🧀 Загрузка сохранения из save_system...")
 		var player_data = save_system.get_player_data()
 		
-		currency = player_data.get("currency", 0)
-		current_health = player_data.get("health", max_health)
-		max_health = player_data.get("max_health", max_health)
-		attack_damage = player_data.get("damage", attack_damage)
+		print("🧀 Получены данные игрока: ", player_data.keys())
 		
-		if player_data.has("cheese_bites") and player_data["cheese_bites"] is Array:
-			cheese_bites = player_data["cheese_bites"].duplicate()
+		if player_data.has("currency"):
+			currency = player_data.get("currency", 0)
+		if player_data.has("health"):
+			current_health = player_data.get("health", max_health)
+		if player_data.has("max_health"):
+			max_health = player_data.get("max_health", max_health)
+		if player_data.has("damage"):
+			attack_damage = player_data.get("damage", attack_damage)
+		
+		# ИСПРАВЛЕННАЯ ЗАГРУЗКА СЫРА
+		if player_data.has("cheese_bites"):
+			var loaded_cheese = player_data["cheese_bites"]
+			print("🧀 Загруженный сыр из сохранения (сырой): ", loaded_cheese)
+			
+			if loaded_cheese is Array and loaded_cheese.size() > 0:
+				cheese_bites = loaded_cheese.duplicate()
+				print("🧀 СЫР ЗАГРУЖЕН ИЗ СОХРАНЕНИЯ: ", cheese_bites)
+			else:
+				print("🧀 Сыр в сохранении пустой или невалидный")
 		else:
-			_init_cheese()
+			print("🧀 Сыр не найден в сохранении")
 		
-		current_hit_count = player_data.get("current_hit_count", 0)
+		if player_data.has("current_hit_count"):
+			current_hit_count = player_data.get("current_hit_count", 0)
 		
 		if player_data.has("position_x") and player_data.has("position_y"):
 			var pos = Vector2(player_data["position_x"], player_data["position_y"])
 			if pos != Vector2.ZERO:
 				global_position = pos
+		
+		print("🧀 Итоговый сыр после загрузки: ", cheese_bites)
 	else:
-		current_health = max_health
-		currency = 0
-		_init_cheese()
-
-func update_save_data():
-	if save_system:
-		save_system.update_player_data(self)
+		print("🧀 save_system не найден или невалиден")
 
 func apply_upgrade(health_bonus: int, damage_bonus: int, crystal_cost: int = 0, currency_cost: int = 0) -> bool:
 	if currency_cost > 0 and currency < currency_cost:
@@ -181,7 +223,6 @@ func apply_upgrade(health_bonus: int, damage_bonus: int, crystal_cost: int = 0, 
 	if currency_label:
 		currency_label.text = str(currency)
 	
-	update_save_data()
 	_refresh_inventory_stats()
 	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
 	return true
@@ -204,22 +245,25 @@ func _input(event):
 	if event.is_action_pressed("super_attack") and can_super_attack and not is_super_jumping and can_move:
 		try_super_attack()
 	
-	# Сохранение без восстановления (одиночный ESC)
-	if event.is_action_pressed("ui_cancel"):
+	if event.is_action_pressed("ui_cancel") and not Input.is_key_pressed(KEY_SHIFT):
 		save_without_restore()
-	
-	# Выход в меню (Ctrl + ESC)
-	if event.is_action_pressed("ui_cancel") and (Input.is_key_pressed(KEY_SHIFT) or Input.is_key_pressed(KEY_SHIFT)):
+
+	if event.is_action_pressed("ui_cancel") and Input.is_key_pressed(KEY_SHIFT):
 		return_to_main_menu()
-		get_viewport().set_input_as_handled()  # Обрабатываем событие чтобы не вызывалось дважды
+		get_viewport().set_input_as_handled()
 
 func save_without_restore():
-	if save_system:
-		print("💾 Сохранение игры (без восстановления)...")
-		save_system.save_game(self)
+	if save_system and is_instance_valid(save_system):
+		print("💾 БЫСТРОЕ СОХРАНЕНИЕ...")
+		print("🧀 Текущий сыр перед сохранением: ", cheese_bites)
+		
+		save_system.update_player_data(self)
+		save_system.quick_save(self)
+		
+		print("✅ Игра сохранена!")
 		_show_notification("Игра сохранена!")
 	else:
-		print("❌ SaveSystem не найден!")
+		print("❌ save_system не найден или невалиден!")
 
 func _physics_process(delta: float):
 	if not can_move or is_super_jumping:
@@ -302,7 +346,7 @@ func _state_super_jump(delta: float):
 	anim_player.play("Jump")
 
 func _state_super_land(delta: float):
-	velocity.y += gravity * delta * 3.0  # Ускоренное падение
+	velocity.y += gravity * delta * 3.0
 	anim_player.play("Jump")
 
 func start_attack() -> void:
@@ -480,77 +524,79 @@ func die() -> void:
 	await get_tree().create_timer(1.0).timeout
 	get_tree().reload_current_scene()
 
-# =================================================
-# СИСТЕМА СЫРА
-# =================================================
-
 func add_cheese_bite():
 	if cheese_bites.size() == 0:
 		return
 	
-	# Ищем самый правый неполный сыр (с конца массива)
 	var cheese_to_fill = -1
 	
-	for i in range(cheese_bites.size() - 1, -1, -1):
-		if cheese_bites[i] < 3:  # Нашли неполный сыр
+	for i in range(cheese_bites.size()):
+		if cheese_bites[i] < 3:
 			cheese_to_fill = i
 			break
 	
-	# Если все сыры полные
 	if cheese_to_fill == -1:
-		print("Все сыры полные!")
+		print("🧀 Все сыры полные!")
 		return
 	
-	# Увеличиваем счетчик ударов
 	current_hit_count += 1
 	
-	# Рассчитываем новое состояние сыра
 	var hits_needed = bites_per_cheese
 	var progress = float(current_hit_count) / float(hits_needed)
 	
-	# Определяем состояние сыра:
 	var new_state = 0
 	if progress >= 1.0:
-		new_state = 3  # полный
+		new_state = 3
 	elif progress >= 2.0/3.0:
-		new_state = 2  # средний
+		new_state = 2
 	elif progress >= 1.0/3.0:
-		new_state = 1  # маленький
+		new_state = 1
 	
-	
-	# Обновляем состояние сыра
 	if new_state != cheese_bites[cheese_to_fill]:
 		cheese_bites[cheese_to_fill] = new_state
 		cheese_bite_added.emit(cheese_to_fill, new_state)
 	
-	# Если сыр стал полным
 	if new_state == 3:
-		print("🎉 Сыр ", cheese_to_fill, " стал полным!")
-		current_hit_count = 0  # Сбрасываем счетчик для следующего сыра
+		print("🧀 Сыр ", cheese_to_fill, " стал полным!")
+		current_hit_count = 0
 	
 	emit_cheese_changed()
+	
+	# ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ СЫРА
+	if save_system and is_instance_valid(save_system):
+		print("🧀 Сохраняем сыр после добавления кусочка: ", cheese_bites)
+		save_system.update_player_data(self)
 
 func consume_cheese() -> bool:
-	# Ищем самый правый полный сыр (с конца массива)
 	for i in range(cheese_bites.size() - 1, -1, -1):
-		if cheese_bites[i] == 3:  # Если сыр полный
-			cheese_bites[i] = 0  # Обнуляем сыр
-			current_hit_count = 0  # Сбрасываем счетчик ударов
+		if cheese_bites[i] == 3:
+			cheese_bites[i] = 0
+			current_hit_count = 0
 			
 			cheese_consumed.emit(i)
 			emit_cheese_changed()
 			print("🧀 Потрачен правый сыр ", i)
+			
+			# ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ СЫРА
+			if save_system and is_instance_valid(save_system):
+				print("🧀 Сохраняем сыр после траты: ", cheese_bites)
+				save_system.update_player_data(self)
 			return true
 	return false
 
 func restore_all_cheese():
 	for i in range(cheese_bites.size()):
-		cheese_bites[i] = 3  # Делаем все сыры полными
+		cheese_bites[i] = 3
 	
 	current_hit_count = 0
 	
 	emit_cheese_changed()
 	print("🧀 Все сыры восстановлены!")
+	
+	# ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ СЫРА
+	if save_system and is_instance_valid(save_system):
+		print("🧀 Сохраняем полный сыр: ", cheese_bites)
+		save_system.update_player_data(self)
 
 func get_full_cheese_count() -> int:
 	var count = 0
@@ -574,25 +620,20 @@ func update_cheese_bonus():
 	bites_per_cheese = max(1, 3 + talisman_cheese_bonus)
 	print("Для полного сыра теперь нужно ударов: ", bites_per_cheese)
 
-# =================================================
-# СУПЕР-АТАКА
-# =================================================
-
 func try_super_attack():
 	if not has_full_cheese():
-		print("❌ Недостаточно сыра для супер-удара!")
+		print("Недостаточно сыра для супер-удара!")
 		return
 	
 	if not can_super_attack or is_super_jumping:
 		return
 	
-	print("💥 Запускаем супер-атаку...")
+	print("Запускаем супер-атаку...")
 	
-	# Тратим самый правый полный сыр
 	if consume_cheese():
 		start_super_jump()
 	else:
-		print("❌ Не удалось использовать сыр для супер-удара")
+		print("Не удалось использовать сыр для супер-удара")
 
 func start_super_jump():
 	can_super_attack = false
@@ -601,58 +642,46 @@ func start_super_jump():
 	can_move = false
 	can_attack = false
 	
-	print("🔼 Супер-прыжок!")
+	print("Супер-прыжок!")
 	
-	# Прыжок вверх
 	velocity.y = super_jump_force
 	velocity.x = 0
 	
-	# Визуальный эффект
 	anim_player.play("Jump")
-	sprite.modulate = Color(1, 0.8, 0.5, 1)  # Золотистый
+	sprite.modulate = Color(1, 0.8, 0.5, 1)
 	
-	# Ждем достижения пика прыжка (примерно 0.4 секунды)
 	await get_tree().create_timer(0.4).timeout
 	
-	print("🔽 Начинаем быстрое падение...")
+	print("Начинаем быстрое падение...")
 	state = State.SUPER_LAND
 	
-	# Увеличиваем гравитацию для быстрого падения
 	var fast_fall_gravity = original_gravity * 3.0
 	
-	# Быстрое падение
 	var fall_timer = 0.0
-	var max_fall_time = 1.5  # Максимальное время падения
+	var max_fall_time = 1.5
 	
 	while not is_on_floor() and fall_timer < max_fall_time:
 		velocity.y += fast_fall_gravity * get_physics_process_delta_time()
 		fall_timer += get_physics_process_delta_time()
 		await get_tree().physics_frame
 	
-	# Удар при приземлении
-	print("💥 Удар при приземлении!")
+	print("Удар при приземлении!")
 	
-	# Восстанавливаем нормальную гравитацию
 	gravity = original_gravity
 	
-	# Наносим урон
 	_apply_super_attack_damage()
 	
-	# Анимация удара
 	anim_player.play("Attack")
-	sprite.modulate = Color(1, 0.5, 0.5, 1)  # Красный
+	sprite.modulate = Color(1, 0.5, 0.5, 1)
 	
 	await get_tree().create_timer(0.2).timeout
 	
-	# Возвращаем нормальный цвет
 	sprite.modulate = Color(1, 1, 1, 1)
 	
-	# Ждем окончания анимации
 	await get_tree().create_timer(0.3).timeout
 	
-	print("✅ Супер-атака завершена!")
+	print("Супер-атака завершена!")
 	
-	# Восстанавливаем управление
 	is_super_jumping = false
 	can_move = true
 	can_attack = true
@@ -660,34 +689,27 @@ func start_super_jump():
 	
 	emit_signal("super_attack_used")
 	
-	# КД супер-атаки
 	await get_tree().create_timer(super_attack_cooldown).timeout
 	can_super_attack = true
 
 func _apply_super_attack_damage():
 	var total_damage = super_attack_damage + talisman_damage_bonus
 	
-	print("💥 Супер-удар! Урон: ", total_damage)
+	print("Супер-удар! Урон: ", total_damage)
 	
-	# Урон всем врагам в области супер-атаки
 	var damaged_enemies = 0
 	for enemy in enemies_in_super_range:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage"):
 			enemy.take_damage(total_damage)
 			damaged_enemies += 1
 	
-	# Также урон врагам в обычной области атаки
 	for enemy in enemies_in_attack_range:
 		if is_instance_valid(enemy) and enemy.has_method("take_damage") and not enemies_in_super_range.has(enemy):
 			enemy.take_damage(total_damage)
 			damaged_enemies += 1
 	
 	if damaged_enemies > 0:
-		print("🎯 Поражено врагов: ", damaged_enemies)
-
-# =================================================
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# =================================================
+		print("Поражено врагов: ", damaged_enemies)
 
 func get_player_health() -> String:
 	var total_hp = max_health + talisman_hp_bonus
@@ -701,7 +723,7 @@ func get_player_currency() -> int:
 	return currency
 
 func return_to_main_menu():
-	print("🚪 Возврат в главное меню...")
+	print("Возврат в главное меню...")
 	save_without_restore()
 	await get_tree().create_timer(0.3).timeout
 	get_tree().change_scene_to_file("res://scenes/menu/menu.tscn")

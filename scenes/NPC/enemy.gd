@@ -12,13 +12,15 @@ enum State { IDLE, CHASE, ATTACK, HURT, DEATH }
 @export var health_bar_path: NodePath = "HealthBar"
 @export var item_drop_scene: PackedScene
 @export var crystal_drop_scene: PackedScene
-@export var crystal_drop_chance: float = 0.25  # 25% шанс
+@export var crystal_drop_chance: float = 0.25
+@export var enemy_id: String = "enemy_"
 
 var current_health: float
 var state: State = State.IDLE
 var player: Node2D
 var can_attack: bool = true
 var is_attacking: bool = false
+var my_unique_id: String = ""
 
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -27,6 +29,13 @@ var is_attacking: bool = false
 @onready var health_bar: TextureProgressBar = null
 
 func _ready():
+	my_unique_id = enemy_id + "_" + str(int(global_position.x)) + "_" + str(int(global_position.y)) + "_" + name
+	
+	if save_system and save_system.is_enemy_killed(my_unique_id):
+		print("Враг уже убит, удаляем: ", my_unique_id)
+		queue_free()
+		return
+	
 	current_health = max_health
 	if health_bar_path and has_node(health_bar_path):
 		health_bar = get_node(health_bar_path)
@@ -35,9 +44,9 @@ func _ready():
 
 	player = get_tree().get_first_node_in_group("players")
 
-	attack_range_area.body_entered.connect(Callable(self, "_on_attack_range_body_entered"))
-	attack_range_area.body_exited.connect(Callable(self, "_on_attack_range_body_exited"))
-	hit_box.area_entered.connect(Callable(self, "_on_hit_box_area_entered"))
+	attack_range_area.body_entered.connect(_on_attack_range_body_entered)
+	attack_range_area.body_exited.connect(_on_attack_range_body_exited)
+	hit_box.area_entered.connect(_on_hit_box_area_entered)
 
 	add_to_group("enemies")
 	play_random_idle()
@@ -149,25 +158,31 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Всегда спавним обычный предмет
 	if item_drop_scene:
 		var item = item_drop_scene.instantiate()
+		if item.has_method("set_enemy_id"):
+			item.set_enemy_id(my_unique_id)
 		get_parent().add_child(item)
 		item.global_position = global_position
 		print("Предмет заспавнен")
 
-	# Спавним кристалл с 25% шансом
 	if crystal_drop_scene:
-		var random_value = randf()  # Случайное число от 0.0 до 1.0
+		var random_value = randf()
 		print("Шанс выпадения кристалла:", random_value, "/", crystal_drop_chance)
 		
 		if random_value <= crystal_drop_chance:
 			var crystal = crystal_drop_scene.instantiate()
+			if crystal.has_method("set_enemy_id"):
+				crystal.set_enemy_id(my_unique_id)
 			get_parent().add_child(crystal)
 			crystal.global_position = global_position
-			print("🎉 Кристалл заспавнен! (шанс сработал)")
+			print("Кристалл заспавнен!")
 		else:
-			print("❌ Кристалл не выпал (шанс не сработал)")
+			print("Кристалл не выпал")
+
+	if save_system and my_unique_id != "":
+		save_system.mark_enemy_killed(my_unique_id)
+		print("Враг помечен как убитый: ", my_unique_id)
 
 	queue_free()
 
