@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://tsi5pgxotxh7"]
+[gd_scene load_steps=9 format=3 uid="uid://tsi5pgxotxh7"]
 
 [ext_resource type="PackedScene" uid="uid://ifqvg5jaythd" path="res://scenes/ui/inventory.tscn" id="1_284y0"]
 [ext_resource type="Texture2D" uid="uid://cwdot6yjj10sx" path="res://assets/HP/Sprite-0003 (1).png" id="2_rcgkl"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://xk1edn7b6hr3" path="res://assets/HP/Sprite-0002 (1).png" id="4_vo76m"]
 [ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="6_vo76m"]
 [ext_resource type="Texture2D" uid="uid://bgn6qqwpdxs5u" path="res://assets/Items_icon/trash.png" id="7_xg44s"]
+[ext_resource type="PackedScene" uid="uid://btoj1kmo6snnv" path="res://scenes/ui/cheese_cell.tscn" id="8_fhs8v"]
 
 [node name="UserInterface" type="CanvasLayer"]
 
@@ -52,3 +53,20 @@ offset_top = 121.0
 offset_right = 129.0
 offset_bottom = 237.0
 texture = ExtResource("7_xg44s")
+
+[node name="CheeseContainer" type="HBoxContainer" parent="HUD"]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 219.0
+offset_right = 376.0
+offset_bottom = 330.5493
+theme_override_constants/separation = 100
+
+[node name="CheeseCell1" parent="HUD/CheeseContainer" instance=ExtResource("8_fhs8v")]
+layout_mode = 2
+
+[node name="CheeseCell2" parent="HUD/CheeseContainer" instance=ExtResource("8_fhs8v")]
+layout_mode = 2
+
+[node name="CheeseCell3" parent="HUD/CheeseContainer" instance=ExtResource("8_fhs8v")]
+layout_mode = 2

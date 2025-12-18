@@ -59,14 +59,23 @@ func load_game():
 
 # ---------------------- Игровые данные ----------------------
 func update_player_data(p: Node):
-	save_data["player_data"] = {
-		"currency": p.currency,
-		"health": p.current_health,
-		"max_health": p.max_health,
-		"damage": p.attack_damage,
+	# Безопасное получение данных об игроке
+	var player_data = {
+		"currency": p.get("currency") if "currency" in p else 0,
+		"health": p.get("current_health") if "current_health" in p else p.get("max_health") if "max_health" in p else 100.0,
+		"max_health": p.get("max_health") if "max_health" in p else 100.0,
+		"damage": p.get("attack_damage") if "attack_damage" in p else 20,
 		"position_x": p.global_position.x,
 		"position_y": p.global_position.y
 	}
+	
+	# Добавляем данные о сыре если они есть
+	if "cheese_bites" in p:
+		player_data["cheese_bites"] = p.cheese_bites.duplicate()
+	if "current_hit_count" in p:
+		player_data["current_hit_count"] = p.current_hit_count
+	
+	save_data["player_data"] = player_data
 
 func get_player_data() -> Dictionary:
 	return save_data.get("player_data", {})

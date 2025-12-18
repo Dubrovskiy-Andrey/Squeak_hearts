@@ -23,7 +23,7 @@ func _on_body_entered(body):
 		player_in_range = true
 		
 		if hint_label:
-			hint_label.text = "Нажми E для сохранения"
+			hint_label.text = "Нажми E для сохранения и восстановления"
 			hint_label.visible = true
 
 func _on_body_exited(body):
@@ -45,16 +45,17 @@ func interact_with_campfire():
 	if not player_in_range or not can_interact:
 		return
 	
-	print("Взаимодействие с костром")
+	print("🔥 Взаимодействие с костром (с восстановлением)")
 	can_interact = false
 	
 	show_interaction_effect()
-	heal_player()
-	save_game_at_campfire()
+	heal_player()           # Восстанавливаем HP
+	restore_player_cheese() # Восстанавливаем сыр
+	save_game_at_campfire() # Сохраняем игру
 	
 	await get_tree().create_timer(0.5).timeout
 	
-	print("Перезагрузка локации...")
+	print("🔄 Перезагрузка локации...")
 	get_tree().reload_current_scene()
 
 func heal_player():
@@ -63,24 +64,31 @@ func heal_player():
 		var player = players[0]
 		if player.has_method("heal"):
 			player.heal(player.max_health)
-			print("Игрок исцелён у костра")
+			print("❤️ Игрок исцелён у костра")
+
+func restore_player_cheese():
+	var players = get_tree().get_nodes_in_group("players")
+	if players.size() > 0:
+		var player = players[0]
+		if player.has_method("restore_all_cheese"):
+			player.restore_all_cheese()
+			print("🧀 Сыр игрока восстановлен у костра")
 
 func save_game_at_campfire():
-	print("Сохранение игры у костра...")
+	print("💾 Сохранение игры у костра...")
 	
 	var players = get_tree().get_nodes_in_group("players")
 	if players.size() > 0:
 		var player = players[0]
 		
 		if save_system:
-			# Передаем ID костра вторым аргументом
 			save_system.save_game(player)
-			print("Игра сохранена через SaveSystem")
+			print("✅ Игра сохранена через SaveSystem")
 		else:
-			print("Ошибка: SaveSystem не найден!")
+			print("❌ Ошибка: SaveSystem не найден!")
 
 func show_interaction_effect():
-	print("Костёр использован")
+	print("🔥 Костёр использован")
 	
 	if sprite:
 		var original_modulate = sprite.modulate
