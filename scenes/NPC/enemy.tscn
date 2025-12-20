@@ -835,11 +835,12 @@ radius = 165.01212
 
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 16
-collision_mask = 5
 script = ExtResource("1_w147c")
+player_detection_range = 150.0
 item_drop_scene = ExtResource("2_eyo7k")
+item_drop_chance = 0.25
 crystal_drop_scene = ExtResource("2_ujbwi")
-crystal_drop_chance = 1.0
+crystal_drop_chance = 0.33
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, -66)

@@ -524,7 +524,8 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -583.0
-offset_bottom = 141.0
+offset_top = 51.0
+offset_bottom = 157.0
 grow_horizontal = 0
 
 [node name="WaveLabel" type="Label" parent="UI/Control"]
@@ -549,7 +550,7 @@ offset_left = 13.0
 offset_top = 84.0
 offset_right = 53.0
 offset_bottom = 107.0
-text = "1000"
+text = "100"
 
 [node name="CheeseHealthBar" type="TextureProgressBar" parent="UI/Control"]
 layout_mode = 1
@@ -565,3 +566,6 @@ texture_over = ExtResource("9_hhgcq")
 texture_progress = ExtResource("10_4wfwo")
 
 [node name="UserInterface" parent="." instance=ExtResource("11_hhgcq")]
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(1000, 925)

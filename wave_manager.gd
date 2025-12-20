@@ -35,6 +35,15 @@ signal total_waves_updated(total)
 		],
 		"name": "Третья волна",
 		"reward": {"trash": 100}
+	},
+	{
+		"delay": 1.5,
+		"enemies": [
+			{"type": "BasicCat", "count": 10},
+			{"type": "BasicCat", "count": 30}
+		],
+		"name": "Четввёртая волна",
+		"reward": {"trash": 1000}
 	}
 ]
 

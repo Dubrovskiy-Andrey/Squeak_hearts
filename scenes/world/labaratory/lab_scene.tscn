@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://2p1kyddp2gmj"]
+[gd_scene load_steps=15 format=3 uid="uid://2p1kyddp2gmj"]
 
 [ext_resource type="Texture2D" uid="uid://bhtclo5nyqtpe" path="res://assets/Lab1.jpg" id="1_biefi"]
 [ext_resource type="Script" uid="uid://f1mbace2d47h" path="res://scenes/world/labaratory/lab_scene.gd" id="1_rqrvs"]
@@ -7,7 +7,6 @@
 [ext_resource type="PackedScene" uid="uid://jm4id6qyq0w5" path="res://scenes/Physics/item_drop.tscn" id="6_4yyd6"]
 [ext_resource type="PackedScene" uid="uid://dws6dok71uvkv" path="res://scenes/NPC/area_2d.tscn" id="7_n7rmk"]
 [ext_resource type="PackedScene" uid="uid://tsi5pgxotxh7" path="res://scenes/ui/user_interface.tscn" id="7_rqrvs"]
-[ext_resource type="PackedScene" uid="uid://casijvqcxil2m" path="res://scenes/NPC/enemy.tscn" id="8_rqrvs"]
 [ext_resource type="PackedScene" uid="uid://c5qywhs0566t8" path="res://campfire.tscn" id="9_ru0wu"]
 [ext_resource type="PackedScene" uid="uid://dtncl4mb1151j" path="res://scenes/NPC/TraderNPC.tscn" id="10_887cg"]
 
@@ -589,10 +588,6 @@ position = Vector2(715, 733)
 position = Vector2(438, 702)
 
 [node name="UserInterface" parent="." instance=ExtResource("7_rqrvs")]
-
-[node name="Enemy" parent="." instance=ExtResource("8_rqrvs")]
-position = Vector2(97, 978)
-item_drop_scene = ExtResource("6_4yyd6")
 
 [node name="Area2D2" parent="." instance=ExtResource("9_ru0wu")]
 position = Vector2(1332, 947)

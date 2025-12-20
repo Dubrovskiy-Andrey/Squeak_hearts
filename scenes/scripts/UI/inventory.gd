@@ -180,6 +180,9 @@ func _apply_talisman_bonuses():
 	if not player:
 		return
 	
+	# Запоминаем старое общее здоровье (с бонусами)
+	var old_total_max_health = player.max_health + player.talisman_hp_bonus
+	
 	# Сбрасываем все бонусы
 	player.talisman_hp_bonus = 0
 	player.talisman_damage_bonus = 0
@@ -197,15 +200,28 @@ func _apply_talisman_bonuses():
 			player.talisman_cooldown_bonus += stats.get("CooldownBonus", 0)
 			player.talisman_cheese_bonus += stats.get("CheeseBonus", 0)
 	
+	# ВАЖНО: Увеличиваем текущее здоровье пропорционально новому максимуму
+	var new_total_max_health = player.max_health + player.talisman_hp_bonus
+	
+	if new_total_max_health > old_total_max_health:
+		# Увеличиваем current_health пропорционально увеличению максимума
+		var health_ratio = player.current_health / old_total_max_health if old_total_max_health > 0 else 1.0
+		player.current_health = new_total_max_health * health_ratio
+	else:
+		# Если максимум уменьшился, убедимся что текущее здоровье не больше нового максимума
+		player.current_health = min(player.current_health, new_total_max_health)
+	
 	player.update_cheese_bonus()
 	player._refresh_inventory_stats()
 	
-	print("✨ Бонусы талисманов применены")
+	print("✨ Бонусы талисманов применены. HP: ", player.current_health, "/", new_total_max_health)
 
 func _remove_talisman_bonuses(talisman):
 	var player = get_tree().get_first_node_in_group("players")
 	if not player:
 		return
+	
+	var old_total_max_health = player.max_health + player.talisman_hp_bonus
 	
 	var stats = talisman["stats"]
 	player.talisman_hp_bonus -= stats.get("HPBonus", 0)
@@ -214,8 +230,20 @@ func _remove_talisman_bonuses(talisman):
 	player.talisman_cooldown_bonus -= stats.get("CooldownBonus", 0)
 	player.talisman_cheese_bonus -= stats.get("CheeseBonus", 0)
 	
+	# ВАЖНО: Уменьшаем текущее здоровье пропорционально новому максимуму
+	var new_total_max_health = player.max_health + player.talisman_hp_bonus
+	
+	if new_total_max_health < old_total_max_health:
+		var health_ratio = player.current_health / old_total_max_health if old_total_max_health > 0 else 1.0
+		player.current_health = new_total_max_health * health_ratio
+	else:
+		# Если максимум увеличился, текущее здоровье остается тем же
+		player.current_health = min(player.current_health, new_total_max_health)
+	
 	player.update_cheese_bonus()
 	player._refresh_inventory_stats()
+	
+	print("📤 Бонусы талисмана сняты. HP: ", player.current_health, "/", new_total_max_health)
 
 func _find_talisman_slot_index(slot):
 	return talismans_slots.find(slot)

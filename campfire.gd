@@ -64,10 +64,17 @@ func heal_player():
 	var players = get_tree().get_nodes_in_group("players")
 	if players.size() > 0:
 		var player = players[0]
-		if player.has_method("heal"):
-			player.heal(player.max_health)
-			print("❤️ Игрок исцелён у костра")
-
+		if "current_health" in player and "max_health" in player:
+			player.current_health = player.max_health
+			if player.has_method("_refresh_inventory_stats"):
+				player._refresh_inventory_stats()  
+			if player.has_signal("health_changed"):
+				var total_max = player.max_health
+				if "talisman_hp_bonus" in player:
+					total_max += player.talisman_hp_bonus
+				player.emit_signal("health_changed", player.current_health, total_max)
+	
+				print("❤️ Игрок исцелён у костра: ", player.current_health, "/", player.max_health)
 func restore_player_cheese():
 	var players = get_tree().get_nodes_in_group("players")
 	if players.size() > 0:

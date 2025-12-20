@@ -12,8 +12,9 @@ enum State { IDLE, CHASE, ATTACK, HURT, DEATH }
 @export var gravity: float = 800.0
 @export var health_bar_path: NodePath = "HealthBar"
 @export var item_drop_scene: PackedScene
+@export var item_drop_chance: float = 0.2  # 20% шанс выпадения обычного лута
 @export var crystal_drop_scene: PackedScene
-@export var crystal_drop_chance: float = 0.25
+@export var crystal_drop_chance: float = 0.25  # 25% шанс выпадения кристалла
 @export var enemy_id: String = "enemy_"
 
 var current_health: float
@@ -298,21 +299,23 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Создаем дроп
-	if item_drop_scene:
+	# Шанс выпадения обычного лута (мусора) - 20%
+	if item_drop_scene and randf() <= item_drop_chance:
 		var item = item_drop_scene.instantiate()
 		if item.has_method("set_enemy_id"):
 			item.set_enemy_id(my_unique_id)
 		get_parent().add_child(item)
 		item.global_position = global_position
-
-	# Шанс выпадения кристалла
+		print("📦 Обычный лут выпал (шанс: ", item_drop_chance * 100, "%)")
+	
+	# Шанс выпадения кристалла - 25%
 	if crystal_drop_scene and randf() <= crystal_drop_chance:
 		var crystal = crystal_drop_scene.instantiate()
 		if crystal.has_method("set_enemy_id"):
 			crystal.set_enemy_id(my_unique_id)
 		get_parent().add_child(crystal)
 		crystal.global_position = global_position
+		print("💎 Кристалл выпал (шанс: ", crystal_drop_chance * 100, "%)")
 
 	# Отмечаем врага как убитого
 	if save_system and my_unique_id != "":

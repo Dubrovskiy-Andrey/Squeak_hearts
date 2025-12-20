@@ -3,6 +3,7 @@ extends Node2D
 @onready var wave_manager = $WaveManager
 @onready var great_cheese = $GreateCheese
 @onready var tilemap = $TileMap
+@onready var spawn_marker = $PlayerSpawn  # Маркер спавна игрока
 
 # UI элементы
 @onready var wave_label: Label = $UI/Control/WaveLabel
@@ -19,6 +20,15 @@ var survival_timer: Timer
 func _ready():
 	print("🏟️ Арена загружена с TileMap!")
 	print("🔍 Проверяю сыр:", great_cheese)
+	print("📍 Проверяю маркер спавна:", spawn_marker)
+	
+	# Отладочная информация о маркере
+	if spawn_marker:
+		print("📍 Маркер спавна найден, позиция:", spawn_marker.global_position)
+	else:
+		print("⚠️ Маркер спавна не найден!")
+		# Создаем временный маркер в центре
+		_create_fallback_spawn_marker()
 	
 	# Добавляем арену в группу для легкого доступа
 	add_to_group("arena")
@@ -51,13 +61,22 @@ func _ready():
 	else:
 		print("❌ Сыр НЕ найден на арене!")
 	
-	# Проверяем точки спавна
+	# Проверяем точки спавна врагов
 	var spawn_points = _get_spawn_points()
-	print("📍 Найдено точек спавна:", spawn_points.size())
+	print("📍 Найдено точек спавна врагов:", spawn_points.size())
 	
-	# Ждем 1 секунду и начинаем игру
-	await get_tree().create_timer(1.0).timeout
+	# Ждем 0.5 секунды и начинаем игру
+	await get_tree().create_timer(0.5).timeout
 	start_game()
+
+func _create_fallback_spawn_marker():
+	# Создаем временный маркер в центре экрана если основной не найден
+	var viewport_size = get_viewport().get_visible_rect().size
+	spawn_marker = Marker2D.new()
+	spawn_marker.name = "FallbackSpawnMarker"
+	spawn_marker.global_position = viewport_size / 2
+	add_child(spawn_marker)
+	print("📍 Создан временный маркер в центре:", spawn_marker.global_position)
 
 func _load_player():
 	# Ищем игрока в сцене
@@ -69,11 +88,27 @@ func _load_player():
 		if player_scene:
 			player = player_scene.instantiate()
 			add_child(player)
-			player.global_position = Vector2(400, 300)
 			print("✅ Игрок создан на арене")
 	else:
 		print("✅ Игрок найден на арене")
-		player.global_position = Vector2(400, 300)
+	
+	# Позиционируем игрока
+	_position_player()
+
+func _position_player():
+	if not player:
+		print("⚠️ Не могу позиционировать игрока - player отсутствует")
+		return
+	
+	# Используем маркер спавна
+	if spawn_marker:
+		player.global_position = spawn_marker.global_position
+		print("🎮 Игрок размещен на маркере спавна:", player.global_position)
+	else:
+		# Запасной вариант - центр экрана
+		var viewport_center = get_viewport().get_visible_rect().size / 2
+		player.global_position = viewport_center
+		print("🎮 Игрок размещен в центре экрана:", player.global_position)
 
 func _get_spawn_points() -> Array:
 	var points = []
@@ -319,7 +354,6 @@ func _show_results_screen():
 
 func _get_camera_center_position() -> Vector2:
 	# Ищем камеру игрока
-	var player = get_tree().get_first_node_in_group("players")
 	if player:
 		print("🎥 Ищу камеру у игрока:", player.name)
 		var camera = player.get_node_or_null("Camera2D")
