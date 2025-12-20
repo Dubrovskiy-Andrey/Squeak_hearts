@@ -148,6 +148,22 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "Настройки"
 
+[node name="DifficultyContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 49
+
+[node name="KittenButton" type="Button" parent="VBoxContainer/DifficultyContainer"]
+layout_mode = 2
+text = "Котёнок"
+
+[node name="CatButton" type="Button" parent="VBoxContainer/DifficultyContainer"]
+layout_mode = 2
+text = "Кот"
+
+[node name="ScaryButton" type="Button" parent="VBoxContainer/DifficultyContainer"]
+layout_mode = 2
+text = "Гроза"
+
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 40

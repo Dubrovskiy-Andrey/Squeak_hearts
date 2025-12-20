@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 # Глобальные ссылки
 @onready var save_system: Node = get_node("/root/save_system")
+@onready var game_manager: Node = get_node("/root/game_manager")
 
 signal health_changed(current_health, max_health)
 signal player_died()
@@ -66,13 +67,25 @@ var stats_panel: Control = null
 var is_super_jumping: bool = false
 var original_gravity: float = 0
 
+# ==== ДОБАВЛЕНО: Флаг для проверки, находимся ли мы на арене ====
+var is_on_arena: bool = false
+var is_initialized: bool = false
+var is_dying: bool = false  # Флаг для предотвращения повторной смерти
+
 func _ready():
-	# Проверяем, найден ли save_system
+	# Проверяем, найдены ли глобальные системы
 	if not save_system:
 		print("❌ save_system не найден в корне сцены!")
 		return
 	
 	print("💾 save_system найден: ", save_system != null)
+	
+	# Проверяем GameManager
+	if not game_manager:
+		print("⚠️ GameManager не найден!")
+	
+	# Определяем, находимся ли мы на арене
+	_check_if_on_arena()
 	
 	add_to_group("players")
 	
@@ -80,10 +93,13 @@ func _ready():
 	original_gravity = gravity
 	current_health = max_health
 	currency = 0
+	
+	# ВРЕМЕННАЯ инициализация сыра (будет перезаписана при загрузке)
 	_init_cheese()
 	bites_per_cheese = max(1, 3 + talisman_cheese_bonus)
 	
 	print("🧀 Временный сыр: ", cheese_bites)
+	print("📍 На арене: ", is_on_arena)
 	
 	# Инициализируем HUD с временными значениями
 	if health_bar_path and has_node(health_bar_path):
@@ -103,6 +119,17 @@ func _ready():
 	
 	# ТОЛЬКО ПОСЛЕ ЗАГРУЗКИ СЦЕНЫ загружаем сохранение
 	call_deferred("_delayed_load")
+
+func _check_if_on_arena():
+	# Проверяем, находимся ли мы на сцене арены
+	var current_scene = get_tree().current_scene
+	if current_scene:
+		var scene_name = current_scene.name.to_lower()
+		if "arena" in scene_name or current_scene.scene_file_path and "arena" in current_scene.scene_file_path.to_lower():
+			is_on_arena = true
+			print("🎮 Игрок загружен на арене")
+		else:
+			is_on_arena = false
 
 func _delayed_load():
 	# Теперь загружаем данные из сохранения (если есть)
@@ -142,6 +169,7 @@ func _delayed_load():
 		super_attack_area.body_entered.connect(Callable(self, "_on_super_attack_area_body_entered"))
 		super_attack_area.body_exited.connect(Callable(self, "_on_super_attack_area_body_exited"))
 	
+	is_initialized = true
 	print("✅ Игрок полностью инициализирован")
 
 func _init_cheese():
@@ -178,25 +206,43 @@ func load_saved_data():
 			var loaded_cheese = player_data["cheese_bites"]
 			print("🧀 Загруженный сыр из сохранения (сырой): ", loaded_cheese)
 			
-			if loaded_cheese is Array and loaded_cheese.size() > 0:
-				cheese_bites = loaded_cheese.duplicate()
-				print("🧀 СЫР ЗАГРУЖЕН ИЗ СОХРАНЕНИЯ: ", cheese_bites)
+			if loaded_cheese is Array and loaded_cheese.size() == max_cheese:
+				# Проверяем валидность каждого элемента
+				var valid = true
+				for bite in loaded_cheese:
+					if not (bite is int and bite >= 0 and bite <= 3):
+						valid = false
+						break
+				
+				if valid:
+					cheese_bites = loaded_cheese.duplicate()
+					print("🧀 СЫР ЗАГРУЖЕН ИЗ СОХРАНЕНИЯ: ", cheese_bites)
+				else:
+					print("🧀 Невалидные данные сыра, инициализирую заново")
+					_init_cheese()
 			else:
-				print("🧀 Сыр в сохранении пустой или невалидный")
+				print("🧀 Сыр в сохранении невалидный, инициализирую заново")
+				_init_cheese()
 		else:
-			print("🧀 Сыр не найден в сохранении")
+			print("🧀 Сыр не найден в сохранении, инициализирую заново")
+			_init_cheese()
 		
 		if player_data.has("current_hit_count"):
 			current_hit_count = player_data.get("current_hit_count", 0)
+		else:
+			current_hit_count = 0
 		
-		if player_data.has("position_x") and player_data.has("position_y"):
+		# Загружаем позицию только если НЕ на арене
+		if player_data.has("position_x") and player_data.has("position_y") and not is_on_arena:
 			var pos = Vector2(player_data["position_x"], player_data["position_y"])
 			if pos != Vector2.ZERO:
 				global_position = pos
+				print("🧀 Позиция загружена: ", global_position)
 		
 		print("🧀 Итоговый сыр после загрузки: ", cheese_bites)
 	else:
 		print("🧀 save_system не найден или невалиден")
+		_init_cheese()
 
 func apply_upgrade(health_bonus: int, damage_bonus: int, crystal_cost: int = 0, currency_cost: int = 0) -> bool:
 	if currency_cost > 0 and currency < currency_cost:
@@ -225,12 +271,18 @@ func apply_upgrade(health_bonus: int, damage_bonus: int, crystal_cost: int = 0, 
 	
 	_refresh_inventory_stats()
 	emit_signal("health_changed", current_health + talisman_hp_bonus, max_health + talisman_hp_bonus)
+	
+	# Сохраняем изменения
+	if save_system:
+		save_system.update_player_data(self)
+	
 	return true
 
 func _ensure_stats_panel_found():
 	if inventory_node:
 		stats_panel = inventory_node.get_node_or_null("StatsPanel")
 
+# ==== ИЗМЕНЕНО: Добавлена проверка на кнопку O для запуска арены ====
 func _input(event):
 	if event.is_action_pressed("inventory") and inventory_node:
 		inventory_node.visible = not inventory_node.visible
@@ -242,6 +294,13 @@ func _input(event):
 		if inventory_node.visible:
 			_refresh_inventory_stats()
 	
+	# Кнопка O для запуска арены (только если НЕ на арене)
+	if event.is_action_pressed("start_arena") and not is_on_arena and can_move:
+		print("🎮 Нажата кнопка O - запуск арены...")
+		start_arena_mode()
+		get_viewport().set_input_as_handled()
+		return
+	
 	if event.is_action_pressed("super_attack") and can_super_attack and not is_super_jumping and can_move:
 		try_super_attack()
 	
@@ -251,6 +310,28 @@ func _input(event):
 	if event.is_action_pressed("ui_cancel") and Input.is_key_pressed(KEY_SHIFT):
 		return_to_main_menu()
 		get_viewport().set_input_as_handled()
+
+# ==== ДОБАВЛЕНО: Функция запуска арены ====
+func start_arena_mode():
+	print("🎮 Запуск режима защиты арены!")
+	
+	# Проверяем GameManager
+	if not game_manager:
+		print("❌ GameManager не найден! Нельзя запустить арену.")
+		_show_notification("Ошибка: GameManager не найден!")
+		return
+	
+	print("🎮 Текущая сложность: ", game_manager.get_difficulty_name())
+	
+	# Сохраняем игру перед переходом
+	if save_system:
+		print("💾 Сохраняем игру перед переходом на арену...")
+		save_without_restore()
+		await get_tree().create_timer(0.5).timeout
+	
+	# Переходим на арену
+	print("🚀 Переход на арену...")
+	get_tree().change_scene_to_file("res://scenes/arena_scene.tscn")
 
 func save_without_restore():
 	if save_system and is_instance_valid(save_system):
@@ -486,6 +567,9 @@ func _refresh_inventory_stats():
 		stats_panel.refresh_stats()
 
 func take_damage(damage: float) -> void:
+	if is_dying:
+		return
+	
 	current_health = max(current_health - damage, 0)
 	
 	var total_current = current_health + talisman_hp_bonus
@@ -518,11 +602,168 @@ func heal(amount: float) -> void:
 	_refresh_inventory_stats()
 
 func die() -> void:
-	emit_signal("player_died")
-	anim_player.play("Death")
+	if is_dying:
+		return
+	
+	is_dying = true
+	print("💀 Игрок умирает...")
+	
+	# Отключаем всё
 	set_physics_process(false)
-	await get_tree().create_timer(1.0).timeout
-	get_tree().reload_current_scene()
+	can_move = false
+	can_attack = false
+	
+	# Отключаем коллизии
+	set_collision_layer(0)
+	set_collision_mask(0)
+	
+	# Сигнал о смерти
+	emit_signal("player_died")
+	
+	# ИСПРАВЛЕНИЕ: Сообщаем арене о смерти игрока
+	if is_on_arena:
+		var arena = get_tree().get_first_node_in_group("arena")
+		if arena and arena.has_method("on_player_died"):
+			arena.on_player_died()
+	
+	# Проигрываем анимацию смерти
+	if anim_player.has_animation("Death"):
+		anim_player.play("Death")
+		await anim_player.animation_finished
+	else:
+		await get_tree().create_timer(1.0).timeout
+	
+	# Если арена не обработала смерть (старая версия), показываем результаты сами
+	if is_on_arena:
+		print("💀 Арена не обработала смерть, показываю результаты самостоятельно...")
+		_show_arena_results_on_death()
+	else:
+		# Если не на арене - возвращаем в лагерь
+		print("💀 Возвращаем в лагерь через 2 секунды...")
+		
+		# Ждем немного перед возвратом
+		await get_tree().create_timer(2.0).timeout
+		
+		# Сохраняем перед выходом
+		if save_system and is_instance_valid(save_system):
+			print("💾 Сохраняем перед возвратом в лагерь...")
+			save_without_restore()
+		
+		# Возвращаем в лагерь
+		print("🚪 Возвращаемся в лагерь...")
+		get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
+		
+func _show_arena_results_on_death():
+	"""Показывает результаты арены при смерти игрока"""
+	print("📊 Показываю экран результатов после смерти игрока...")
+	
+	# Получаем данные с арены
+	var arena = get_tree().get_first_node_in_group("arena")
+	if arena:
+		print("✅ Арена найдена, получаю данные...")
+		
+		# Получаем время выживания
+		var survival_time = 0.0
+		var waves_completed = 0
+		
+		if arena.has_method("get_survival_time"):
+			survival_time = arena.get_survival_time()
+			print("⏱️ Время выживания: ", survival_time)
+		
+		# Получаем количество пройденных волн
+		var wave_manager = get_tree().get_first_node_in_group("wave_manager")
+		if wave_manager and wave_manager.has_method("get_current_wave"):
+			waves_completed = wave_manager.get_current_wave() - 1  # -1 потому что текущая волна не завершена
+			print("🌊 Волн пройдено: ", waves_completed)
+		
+		# Сохраняем игру перед показом результатов
+		if save_system and is_instance_valid(save_system):
+			print("💾 Сохраняем перед показом результатов...")
+			save_without_restore()
+			await get_tree().create_timer(0.5).timeout
+		
+		# Показываем сообщение о смерти
+		var message = Label.new()
+		message.text = "💀 ВАС УБИЛИ! 💀"
+		message.add_theme_font_size_override("font_size", 48)
+		message.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+		message.position = Vector2(400, 300) - Vector2(150, 25)
+		get_parent().add_child(message)
+		
+		var tween = create_tween()
+		tween.tween_property(message, "scale", Vector2(1.5, 1.5), 0.5)
+		tween.tween_property(message, "scale", Vector2(1.0, 1.0), 0.5)
+		tween.tween_property(message, "modulate:a", 0, 1.0)
+		
+		await get_tree().create_timer(2.0).timeout
+		if is_instance_valid(message):
+			message.queue_free()
+		
+		# Ждем еще немного
+		await get_tree().create_timer(1.0).timeout
+		
+		# Загружаем сцену результатов
+		var results_scene = load("res://scenes/arena_result.tscn")
+		if results_scene:
+			print("✅ Сцена результатов загружена")
+			
+			var results = results_scene.instantiate()
+			print("✅ Экземпляр создан")
+			
+			# Находим позицию камеры
+			var camera_position = _get_camera_center_position()
+			print("📊 Центр камеры для позиционирования:", camera_position)
+			
+			# Добавляем на сцену
+			get_parent().add_child(results)
+			print("✅ Окно добавлено на сцену")
+			
+			# Ждем один кадр чтобы окно полностью инициализировалось
+			await get_tree().process_frame
+			
+			# Вызываем методы окна результатов
+			if results.has_method("position_at_camera"):
+				print("✅ Вызываю position_at_camera()")
+				results.position_at_camera(camera_position)
+			
+			# Вызываем display_results с флагом поражения (victory = false)
+			if results.has_method("display_results"):
+				print("✅ Вызываю display_results()")
+				await get_tree().create_timer(0.05).timeout
+				results.display_results(survival_time, waves_completed, false, camera_position)
+				print("✅ display_results() вызван")
+			else:
+				print("❌ Окно не имеет метода display_results()")
+			
+			# Скрываем UI арены
+			var ui = get_tree().get_first_node_in_group("arena_ui")
+			if ui:
+				ui.visible = false
+				print("✅ UI арены скрыт")
+			
+			print("✅ Всё готово, окно должно быть видно!")
+		else:
+			print("❌ Сцена результатов не найдена")
+	else:
+		print("❌ Арена не найдена, просто возвращаюсь в лагерь")
+		_return_to_lab()
+
+func _get_camera_center_position() -> Vector2:
+	# Ищем камеру
+	var camera = get_viewport().get_camera_2d()
+	if camera:
+		print("🎥 Камера найдена, позиция:", camera.global_position)
+		return camera.global_position
+	
+	# Если нет камеры, используем позицию игрока
+	print("🎥 Камера не найдена, использую позицию игрока:", global_position)
+	return global_position
+
+func _return_to_lab():
+	# Возвращаем в лагерь после показа результатов
+	print("🚪 Возвращаемся в лагерь...")
+	await get_tree().create_timer(3.0).timeout
+	get_tree().change_scene_to_file("res://scenes/world/labaratory/lab_scene.tscn")
 
 func add_cheese_bite():
 	if cheese_bites.size() == 0:
@@ -615,6 +856,9 @@ func get_cheese_state(index: int) -> int:
 	if index >= 0 and index < cheese_bites.size():
 		return cheese_bites[index]
 	return 0
+
+func get_current_health() -> float:
+	return current_health
 
 func update_cheese_bonus():
 	bites_per_cheese = max(1, 3 + talisman_cheese_bonus)
@@ -738,3 +982,31 @@ func set_can_move(value: bool):
 		state = State.IDLE
 		anim_player.play("Idle")
 	print("Движение игрока:", "разблокировано" if value else "заблокировано")
+
+func stop_all_enemies():
+	print("⏹️ Игрок пытается остановить врагов...")
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if enemy.has_method("stop_moving"):
+			enemy.call_deferred("stop_moving")
+	print("⏹️ Отправлен запрос на остановку", enemies.size(), "врагов")
+
+# Добавить в конец player.gd:
+
+func heal_to_full():
+	"""Восстанавливает здоровье до максимума"""
+	current_health = max_health
+	
+	var total_current = current_health + talisman_hp_bonus
+	var total_max = max_health + talisman_hp_bonus
+	
+	if health_bar:
+		health_bar.value = total_current
+	
+	emit_signal("health_changed", total_current, total_max)
+	
+	print("❤️ Здоровье восстановлено: ", current_health, "/", max_health)
+	
+	# Сохраняем изменения
+	if save_system:
+		save_system.update_player_data(self)

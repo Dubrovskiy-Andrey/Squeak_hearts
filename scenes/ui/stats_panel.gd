@@ -74,7 +74,3 @@ func refresh_stats():
 	if currency_label:
 		currency_label.text = str(player_node.get_player_currency())
 	
-	print("📊 StatsPanel обновлен:", 
-		"HP:", player_node.get_player_health() if health_label else "N/A",
-		"DMG:", player_node.get_player_damage() if damage_label else "N/A",
-		"Trash:", player_node.get_player_currency() if currency_label else "N/A")

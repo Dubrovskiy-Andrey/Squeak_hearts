@@ -1,7 +1,8 @@
-[gd_scene load_steps=93 format=3 uid="uid://casijvqcxil2m"]
+[gd_scene load_steps=95 format=3 uid="uid://casijvqcxil2m"]
 
 [ext_resource type="Texture2D" uid="uid://bpwlvyfy03k6r" path="res://assets/cat.png" id="1_8skpk"]
 [ext_resource type="Script" uid="uid://oowtaehq4yc6" path="res://scenes/NPC/enemy.gd" id="1_w147c"]
+[ext_resource type="PackedScene" uid="uid://jm4id6qyq0w5" path="res://scenes/Physics/item_drop.tscn" id="2_eyo7k"]
 [ext_resource type="PackedScene" uid="uid://bxt0t5gwatt6o" path="res://scenes/Physics/crystal.tscn" id="2_ujbwi"]
 [ext_resource type="Texture2D" uid="uid://cwdot6yjj10sx" path="res://assets/HP/Sprite-0003 (1).png" id="3_naxkv"]
 [ext_resource type="Texture2D" uid="uid://xk1edn7b6hr3" path="res://assets/HP/Sprite-0002 (1).png" id="4_ujbwi"]
@@ -829,9 +830,14 @@ radius = 66.0303
 [sub_resource type="CircleShape2D" id="CircleShape2D_ouc43"]
 radius = 40.04997
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_eyo7k"]
+radius = 165.01212
+
 [node name="Enemy" type="CharacterBody2D"]
 collision_layer = 16
+collision_mask = 5
 script = ExtResource("1_w147c")
+item_drop_scene = ExtResource("2_eyo7k")
 crystal_drop_scene = ExtResource("2_ujbwi")
 crystal_drop_chance = 1.0
 
@@ -882,3 +888,10 @@ texture_under = ExtResource("3_naxkv")
 texture_over = ExtResource("5_eyo7k")
 texture_progress = ExtResource("4_ujbwi")
 tint_progress = Color(1, 0, 0, 1)
+
+[node name="PlayerDetectionArea" type="Area2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetectionArea"]
+position = Vector2(-1, -66)
+shape = SubResource("CircleShape2D_eyo7k")

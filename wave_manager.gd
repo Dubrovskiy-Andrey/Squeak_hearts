@@ -1,0 +1,306 @@
+extends Node
+
+class_name WaveManager
+
+# Сигналы
+signal wave_started(wave_num, wave_data)
+signal wave_completed(wave_num)
+signal enemy_spawned(enemy)
+signal all_enemies_defeated()
+signal total_waves_updated(total)
+
+# Экспортные переменные
+@export var spawn_points: Array[NodePath] = []
+@export var enemy_scenes: Dictionary = {
+	"BasicCat": preload("res://scenes/NPC/enemy.tscn")
+}
+@export var wave_configs: Array[Dictionary] = [
+	{
+		"delay": 3.0,
+		"enemies": [{"type": "BasicCat", "count": 3}],
+		"name": "Первая волна",
+		"reward": {"trash": 50}
+	},
+	{
+		"delay": 2.5,
+		"enemies": [{"type": "BasicCat", "count": 5}],
+		"name": "Вторая волна",
+		"reward": {"trash": 75}
+	},
+	{
+		"delay": 2.0,
+		"enemies": [
+			{"type": "BasicCat", "count": 4},
+			{"type": "BasicCat", "count": 3}
+		],
+		"name": "Третья волна",
+		"reward": {"trash": 100}
+	}
+]
+
+# Состояние
+var current_wave: int = -1
+var is_wave_active: bool = false
+var enemies_to_spawn: Array = []
+var enemies_alive: int = 0
+var spawn_timer: Timer
+var time_between_waves: float = 5.0
+var actual_spawn_points: Array[Node2D] = []
+var stop_all_waves_flag: bool = false  # Флаг для полной остановки
+
+@onready var game_manager = get_node("/root/game_manager") if has_node("/root/game_manager") else null
+
+func _ready():
+	# Инициализируем точки спавна
+	for point_path in spawn_points:
+		if has_node(point_path):
+			var point = get_node(point_path)
+			if point:
+				actual_spawn_points.append(point)
+	
+	print("✅ WaveManager готов. Точек спавна:", actual_spawn_points.size())
+	
+	# Создаем таймер спавна
+	spawn_timer = Timer.new()
+	add_child(spawn_timer)
+	spawn_timer.one_shot = false
+
+func start_waves():
+	print("🚀 Начинаем волны!")
+	current_wave = 0
+	stop_all_waves_flag = false  # Сбрасываем флаг остановки
+	start_next_wave()
+
+func start_next_wave():
+	# Проверяем не остановлены ли волны
+	if stop_all_waves_flag:
+		print("⏹️ Волны остановлены, не начинаем новую")
+		return
+	
+	if current_wave >= wave_configs.size():
+		print("🎉 Все волны пройдены!")
+		all_enemies_defeated.emit()
+		return
+	
+	# Получаем конфиг текущей волны
+	var wave_config = wave_configs[current_wave]
+	
+	# Подготавливаем список врагов
+	enemies_to_spawn.clear()
+	for enemy_data in wave_config["enemies"]:
+		for i in range(enemy_data["count"]):
+			enemies_to_spawn.append(enemy_data["type"])
+	
+	enemies_alive = enemies_to_spawn.size()
+	is_wave_active = true
+	
+	print("🌊 Волна", current_wave + 1, "началась! Врагов:", enemies_alive)
+	print("📝 Конфиг волны:", wave_config["name"])
+	
+	# Запускаем таймер спавна
+	spawn_timer.wait_time = wave_config.get("delay", 2.0)
+	spawn_timer.timeout.connect(_spawn_next_enemy)
+	spawn_timer.start()
+	
+	# Сигнал о начале волны
+	wave_started.emit(current_wave + 1, wave_config)
+	
+	# Обновляем UI
+	total_waves_updated.emit(wave_configs.size())
+
+func _spawn_next_enemy():
+	# Проверяем не остановлены ли волны
+	if stop_all_waves_flag:
+		print("⏹️ Волны остановлены, прекращаем спавн")
+		spawn_timer.stop()
+		return
+	
+	if enemies_to_spawn.is_empty():
+		spawn_timer.stop()
+		spawn_timer.timeout.disconnect(_spawn_next_enemy)
+		print("✅ Все враги заспавнены для волны", current_wave + 1)
+		return
+	
+	if actual_spawn_points.is_empty():
+		print("❌ Нет точек спавна!")
+		return
+	
+	# Берем тип врага
+	var enemy_type = enemies_to_spawn.pop_front()
+	
+	# Проверяем наличие сцены врага
+	if not enemy_scenes.has(enemy_type):
+		print("❌ Неизвестный тип врага:", enemy_type)
+		return
+	
+	var enemy_scene = enemy_scenes[enemy_type]
+	if not enemy_scene:
+		print("❌ Сцена врага не загружена:", enemy_type)
+		return
+	
+	# Выбираем случайную точку спавна
+	var spawn_point = actual_spawn_points[randi() % actual_spawn_points.size()]
+	
+	# Создаем врага
+	var enemy = enemy_scene.instantiate()
+	get_parent().add_child(enemy)
+	enemy.global_position = spawn_point.global_position
+	
+	# Применяем модификаторы сложности
+	_apply_difficulty_to_enemy(enemy)
+	
+	# Подписываемся на смерть врага
+	enemy.tree_exited.connect(_on_enemy_died)
+	
+	print("🐱 Спавн врага в позиции", spawn_point.global_position)
+	enemy_spawned.emit(enemy)
+
+func _apply_difficulty_to_enemy(enemy: Node):
+	if not game_manager:
+		print("⚠️ GameManager не найден, сложность не применена")
+		return
+	
+	# Получаем множители сложности
+	var hp_mult = 1.0
+	var damage_mult = 1.0
+	
+	if game_manager.has_method("get_difficulty_multiplier"):
+		hp_mult = game_manager.get_difficulty_multiplier("enemy_hp_multiplier")
+		damage_mult = game_manager.get_difficulty_multiplier("enemy_damage_multiplier")
+	else:
+		print("⚠️ GameManager не имеет метода get_difficulty_multiplier")
+		return
+	
+	print("🎮 Применяем сложность: HP x", hp_mult, ", Урон x", damage_mult)
+	
+	# Применяем к врагу
+	if enemy.has_method("scale_stats"):
+		enemy.scale_stats(hp_mult, damage_mult)
+
+func _on_enemy_died():
+	enemies_alive -= 1
+	print("☠️ Враг убит. Осталось:", enemies_alive)
+	
+	if enemies_alive <= 0 and is_wave_active and not stop_all_waves_flag:
+		_wave_completed()
+
+func _wave_completed():
+	# Проверяем не остановлены ли волны
+	if stop_all_waves_flag:
+		print("⏹️ Волны остановлены, пропускаем завершение волны")
+		return
+	
+	is_wave_active = false
+	
+	# Останавливаем таймер если он запущен
+	if spawn_timer and spawn_timer.timeout.is_connected(_spawn_next_enemy):
+		spawn_timer.stop()
+		spawn_timer.timeout.disconnect(_spawn_next_enemy)
+	
+	print("✅ Волна", current_wave + 1, "завершена!")
+	
+	# Даем награду за волну
+	if is_inside_tree() and not stop_all_waves_flag:
+		_give_wave_reward()
+	else:
+		print("⚠️ Волны остановлены или WaveManager не в дереве сцены, пропускаем награду")
+	
+	# Сигнал о завершении волны
+	if not stop_all_waves_flag:
+		wave_completed.emit(current_wave + 1)
+	
+	# Ждем перед следующей волной ТОЛЬКО ЕСЛИ волны не остановлены
+	if is_inside_tree() and not stop_all_waves_flag:
+		print("⏳ Ожидание 5 сек перед следующей волной...")
+		await get_tree().create_timer(time_between_waves).timeout
+		
+		# Начинаем следующую волну
+		current_wave += 1
+		print("➡️ Переход к волне", current_wave + 1)
+		start_next_wave()
+	else:
+		print("⚠️ Волны остановлены или WaveManager удален, не начинаем следующую волну")
+
+func _give_wave_reward():
+	# ПРОВЕРКА: Волны остановлены?
+	if stop_all_waves_flag:
+		print("⚠️ Волны остановлены, награда не выдана")
+		return
+	
+	# ПРОВЕРКА: Мы все еще в дереве сцены?
+	if not is_inside_tree():
+		print("⚠️ WaveManager не в дереве сцены, пропускаем награду")
+		return
+	
+	# ПРОВЕРКА: Есть ли конфиг для текущей волны?
+	if current_wave >= wave_configs.size():
+		return
+	
+	var wave_config = wave_configs[current_wave]
+	var reward = wave_config.get("reward", {"trash": 50})
+	
+	# Применяем множитель сложности
+	var reward_mult = 1.0
+	if game_manager and game_manager.has_method("get_difficulty_multiplier"):
+		reward_mult = game_manager.get_difficulty_multiplier("reward_multiplier")
+	
+	var trash_reward = int(reward.get("trash", 50) * reward_mult)
+	
+	# ИЩЕМ ИГРОКА
+	var player = get_tree().get_first_node_in_group("players")
+	
+	# ДАЕМ НАГРАДУ ТОЛЬКО ЕСЛИ ИГРОК СУЩЕСТВУЕТ
+	if player and is_instance_valid(player):
+		player.currency += trash_reward
+		if player.has_signal("currency_changed"):
+			player.emit_signal("currency_changed", player.currency)
+		
+		print("💰 Награда за волну", current_wave + 1, ":", trash_reward, " Trash")
+		
+		# Сохраняем прогресс
+		if save_system and is_instance_valid(save_system):
+			save_system.save_game(player)
+	else:
+		print("⚠️ Игрок не найден, награда не выдана")
+
+func stop_waves():
+	print("⏹️ WaveManager.stop_waves() вызван - ПОЛНАЯ ОСТАНОВКА")
+	stop_all_waves_flag = true  # Устанавливаем флаг остановки
+	is_wave_active = false
+	
+	# Останавливаем таймер
+	if spawn_timer:
+		spawn_timer.stop()
+		print("⏹️ Таймер спавна остановлен")
+	
+	# Отключаем все подключенные сигналы
+	if spawn_timer and spawn_timer.timeout.is_connected(_spawn_next_enemy):
+		spawn_timer.timeout.disconnect(_spawn_next_enemy)
+		print("⏹️ Сигнал таймера отключен")
+	
+	# Очищаем список врагов для спавна
+	enemies_to_spawn.clear()
+	print("⏹️ Список врагов для спавна очищен")
+	
+	print("⏹️ Волны полностью остановлены")
+
+func get_current_wave() -> int:
+	return current_wave + 1 if current_wave >= 0 else 0
+
+func get_total_waves() -> int:
+	return wave_configs.size()
+
+func get_enemies_alive() -> int:
+	return enemies_alive
+
+func is_wave_in_progress() -> bool:
+	return is_wave_active and not stop_all_waves_flag
+
+# Новый метод для очистки всех врагов
+func clear_all_enemies():
+	print("🧹 Очищаю всех врагов...")
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	for enemy in enemies:
+		if is_instance_valid(enemy):
+			enemy.queue_free()
+	print("🧹 Очищено врагов:", enemies.size())
