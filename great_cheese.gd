@@ -8,7 +8,7 @@ signal destroyed
 
 @onready var sprite: Sprite2D = $Sprite2D
 
-var is_destroyed: bool = false  # Флаг для предотвращения повторного уничтожения
+var is_destroyed: bool = false
 
 func _ready():
 	print("🧀 Сыр создан! HP:", current_health, "/", max_health)
@@ -17,8 +17,32 @@ func _ready():
 	add_to_group("great_cheese")
 	print("✅ Сыр добавлен в группу 'great_cheese'")
 	
+	# ПОДКЛЮЧАЕМ СИГНАЛЫ ДЛЯ СНАРЯДОВ
+	area_entered.connect(_on_area_entered)
+	
 	# Проверяем что в группе
 	print("🔍 Объектов в группе 'great_cheese':", get_tree().get_nodes_in_group("great_cheese").size())
+
+# НОВЫЙ МЕТОД: обработка попадания снарядов
+func _on_area_entered(area: Area2D):
+	if is_destroyed:
+		return
+	
+	print("🎯 Область вошла в сыр: ", area.name)
+	print("🎯 Группы области: ", area.get_groups())
+	
+	# Проверяем, является ли это снарядом врага
+	if area.is_in_group("enemy_projectiles"):
+		print("🎯 Снаряд попал в сыр!")
+		if area.has_method("get_damage"):
+			var damage = area.get_damage()
+			take_damage(damage)
+		elif area.has_meta("damage"):
+			var damage = area.get_meta("damage")
+			take_damage(float(damage))
+		else:
+			# Урон по умолчанию
+			take_damage(10.0)
 
 func take_damage(damage: float):
 	if is_destroyed:
@@ -73,3 +97,7 @@ func heal(amount: float):
 	current_health = min(current_health + amount, max_health)
 	health_changed.emit(current_health, max_health)
 	print("🧀 Сыр исцелён на", amount, " HP:", current_health)
+
+# Метод для получения урона извне
+func get_damage() -> float:
+	return 10.0  # или любое другое значение

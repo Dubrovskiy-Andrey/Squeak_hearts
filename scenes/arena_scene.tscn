@@ -480,7 +480,7 @@ layer_0/tile_data = PackedInt32Array(3997696, 131072, 0, 4063232, 131072, 0, 399
 [node name="GreateCheese" type="Area2D" parent="."]
 position = Vector2(1216, 948)
 collision_layer = 4
-collision_mask = 16
+collision_mask = 80
 script = ExtResource("2_bt4xr")
 max_health = 100.0
 current_health = 100.0

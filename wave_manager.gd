@@ -12,12 +12,13 @@ signal total_waves_updated(total)
 # Экспортные переменные
 @export var spawn_points: Array[NodePath] = []
 @export var enemy_scenes: Dictionary = {
-	"BasicCat": preload("res://scenes/NPC/enemy.tscn")
+	"BasicCat": preload("res://scenes/NPC/enemy.tscn"),
+	"ArcherCat": preload("res://scenes/NPC/enemy_ranged.tscn")
 }
 @export var wave_configs: Array[Dictionary] = [
 	{
 		"delay": 3.0,
-		"enemies": [{"type": "BasicCat", "count": 3}],
+		"enemies": [{"type": "ArcherCat", "count": 3}],
 		"name": "Первая волна",
 		"reward": {"trash": 50}
 	},
