@@ -299,24 +299,54 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Шанс выпадения обычного лута (мусора) - 20%
-	if item_drop_scene and randf() <= item_drop_chance:
+	# Применяем бонус шанса дропа от Salli
+	var drop_multiplier = 1.0
+	var crystal_multiplier = 1.0
+	
+	if save_system:
+		# Получаем уровень улучшения дропа от Salli
+		var drop_level = save_system.get_npc_upgrade_level("salli_drop_chance")
+		if drop_level > 0:
+			# Каждый уровень даёт +5% к шансу дропа (0.05)
+			drop_multiplier = 1.0 + (drop_level * 0.05)
+			crystal_multiplier = 1.0 + (drop_level * 0.05)
+			print("🎯 Бонус дропа от Salli: ×", drop_multiplier, " (уровень ", drop_level, ")")
+	
+	# Шанс выпадения обычного лута (мусора) с учётом бонуса
+	var final_item_chance = item_drop_chance * drop_multiplier
+	# Ограничиваем максимальный шанс 80%
+	final_item_chance = min(final_item_chance, 0.8)
+	
+	if item_drop_scene and randf() <= final_item_chance:
 		var item = item_drop_scene.instantiate()
 		if item.has_method("set_enemy_id"):
 			item.set_enemy_id(my_unique_id)
 		get_parent().add_child(item)
 		item.global_position = global_position
-		print("📦 Обычный лут выпал (шанс: ", item_drop_chance * 100, "%)")
+		print("📦 Обычный лут выпал (шанс: ", int(final_item_chance * 100), "%)")
 	
-	# Шанс выпадения кристалла - 25%
-	if crystal_drop_scene and randf() <= crystal_drop_chance:
+	# Шанс выпадения кристалла с учётом бонуса
+	var final_crystal_chance = crystal_drop_chance * crystal_multiplier
+	# Ограничиваем максимальный шанс 70%
+	final_crystal_chance = min(final_crystal_chance, 0.7)
+	
+	if crystal_drop_scene and randf() <= final_crystal_chance:
 		var crystal = crystal_drop_scene.instantiate()
 		if crystal.has_method("set_enemy_id"):
 			crystal.set_enemy_id(my_unique_id)
 		get_parent().add_child(crystal)
 		crystal.global_position = global_position
-		print("💎 Кристалл выпал (шанс: ", crystal_drop_chance * 100, "%)")
-
+		print("💎 Кристалл выпал (шанс: ", int(final_crystal_chance * 100), "%)")
+	
+	# Даём валюту игроку за убийство
+	var player = get_tree().get_first_node_in_group("players")
+	if player and is_instance_valid(player):
+		var kill_reward = 10
+		player.currency += kill_reward
+		if player.has_signal("currency_changed"):
+			player.emit_signal("currency_changed", player.currency)
+		print("💰 Награда за убийство: +", kill_reward, " Trash")
+	
 	# Отмечаем врага как убитого
 	if save_system and my_unique_id != "":
 		save_system.mark_enemy_killed(my_unique_id)
@@ -326,7 +356,7 @@ func die():
 	
 	# Эмитируем сигнал смерти для WaveManager
 	get_tree().call_group("wave_manager", "_on_enemy_died")
-
+	
 func play_random_idle():
 	var idle_animations = ["Idle", "Idle2"]
 	if idle_animations.size() > 0:
@@ -359,3 +389,6 @@ func stop_moving():
 	velocity = Vector2.ZERO
 	if anim_player:
 		anim_player.play("Idle")
+
+func apply_wave_bonus(wave_number: int):
+	pass

@@ -1,9 +1,10 @@
-Sally: Привет, улучшить тебя?
-if {upgrade_level} <= 2.0:
-	- Привет! Я могу улучшить тебя за {current_upgrade_cost} валюты и {current_crystal_cost} кристаллов.(Твой уровень прокачки: {upgrade_level}) | [if {player_currency} >= {current_upgrade_cost} and {player_crystals} >= {current_crystal_cost}] [else="hide" alt_text="Прокачай меня!"]
-		[signal arg="buy_upgrade"]
-		Sally: Отличный выбор! Чувствуешь прилив сил?
-	- Мне нужно подумать..
-		Sally: Хорошо! Приходи, если передумаешь.
-else:
-	Sally: Ух ты! Ты уже стал очень сильным. К сожалению я не смогу тебя усилить.
+Sally: Привет, искатель приключений! Я могу улучшить твои способности. Для прокачки потребуется  {current_upgrade_cost} валюты и {current_crystal_cost} кристаллов.
+- Да, прокачай мои способности
+	if {upgrade_level} < 3.0:
+		[signal arg="upgrade_health_damage"]
+	elif {upgrade_level} >= 3.0:
+		Sally: Ух ты! Ты уже стал очень сильным. К сожалению я не смогу тебя усилить дальше.
+- Особые улучшения за кристаллы
+	[signal arg="salli_crystal_upgrades"]
+- Уйти
+	[signal arg="exit_dialog"]

@@ -2,26 +2,21 @@ extends CharacterBody2D
 
 enum State { IDLE, CHASE, ATTACK, HURT, DEATH }
 
-# Экспортируемые параметры
-@export var max_health: float = 50.0
-@export var move_speed: float = 120.0
-@export var attack_damage: float = 15.0
-@export var attack_range: float = 300.0
-@export var min_shooting_distance: float = 150.0
+@export var max_health: float = 250.0
+@export var move_speed: float = 150.0
+@export var attack_damage: float = 25.0
+@export var attack_range: float = 40.0
 @export var detection_range: float = 2300.0
 @export var player_detection_range: float = 200.0
-@export var attack_cooldown: float = 2.0
+@export var attack_cooldown: float = 1.0
 @export var gravity: float = 800.0
-@export var projectile_scene: PackedScene
-@export var projectile_speed: float = 300.0
 @export var health_bar_path: NodePath = "HealthBar"
 @export var item_drop_scene: PackedScene
-@export var item_drop_chance: float = 0.2
+@export var item_drop_chance: float = 0.2  # 20% шанс выпадения обычного лута
 @export var crystal_drop_scene: PackedScene
-@export var crystal_drop_chance: float = 0.25
-@export var enemy_id: String = "enemy_ranged_"
+@export var crystal_drop_chance: float = 0.25  # 25% шанс выпадения кристалла
+@export var enemy_id: String = "boss_enemy_"
 
-# Переменные
 var current_health: float
 var state: State = State.IDLE
 var player: Node2D
@@ -35,18 +30,22 @@ var is_distracted_by_player: bool = false
 var distraction_cooldown: float = 0.0
 var is_dying: bool = false
 
-# Ноды
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var attack_range_area: Area2D = $AttackRange
 @onready var hit_box: Area2D = $HitBox
 @onready var health_bar: TextureProgressBar = null
 @onready var player_detection_area: Area2D = $PlayerDetectionArea
-@onready var shoot_point: Marker2D = $ShootPoint
 @onready var save_system = get_node_or_null("/root/save_system")
 
 func _ready():
-	# Генерируем уникальный ID
+	current_health = max_health
+	# Увеличиваем размер спрайта
+	if $AnimatedSprite2D:
+		$AnimatedSprite2D.scale *= 1.5
+	
+	print("👑 БОСС создан! HP:", current_health)
+	add_to_group("boss")
 	my_unique_id = enemy_id + "_" + str(int(global_position.x)) + "_" + str(int(global_position.y)) + "_" + str(Time.get_ticks_msec())
 	
 	# Проверяем, не убит ли уже враг
@@ -61,10 +60,6 @@ func _ready():
 		health_bar.max_value = max_health
 		health_bar.value = current_health
 	
-	# Добавляем в группу врагов
-	add_to_group("enemies")
-	add_to_group("ranged_enemies")
-	print("✅ Враг-стрелок добавлен в группу 'enemies'")
 	
 	# Находим цели
 	call_deferred("_find_initial_targets")
@@ -78,15 +73,14 @@ func _ready():
 		player_detection_area.body_entered.connect(Callable(self, "_on_player_detection_area_body_entered"))
 		player_detection_area.body_exited.connect(Callable(self, "_on_player_detection_area_body_exited"))
 	
-	# Просто проигрываем Idle анимацию
-	anim_player.play("Idle")
+	play_random_idle()
 
 func _find_initial_targets():
 	# Ищем цели по группам
 	player = get_tree().get_first_node_in_group("players")
 	cheese = get_tree().get_first_node_in_group("great_cheese")
 	
-	print("🔍 Враг-стрелок ищет начальные цели:")
+	print("🔍 Враг ищет начальные цели:")
 	print("   Игрок (players):", player != null)
 	print("   Сыр (great_cheese):", cheese != null)
 	
@@ -117,8 +111,10 @@ func _physics_process(delta):
 	if state == State.DEATH or is_dying:
 		return
 
-	# Применяем гравитацию ВСЕГДА
-	velocity.y += gravity * delta
+	if not is_on_floor():
+		velocity.y += gravity * delta
+	else:
+		velocity.y = 0
 
 	# Обновляем кулдаун отвлечения
 	if distraction_cooldown > 0:
@@ -154,25 +150,18 @@ func _physics_process(delta):
 			distraction_cooldown = 10.0
 			state = State.CHASE
 	
-	# ЛОГИКА СТРЕЛЬБЫ:
 	if state != State.ATTACK and state != State.HURT:
-		if distance_to_target <= attack_range and distance_to_target >= min_shooting_distance:
-			# Если цель в зоне стрельбы
+		if distance_to_target <= attack_range:
 			state = State.ATTACK
-		elif distance_to_target > attack_range and distance_to_target <= detection_range:
-			# Если цель в зоне преследования
-			state = State.CHASE
-		elif distance_to_target < min_shooting_distance:
-			# Если слишком близко - отступаем
+		elif distance_to_target <= detection_range:
 			state = State.CHASE
 		else:
 			state = State.IDLE
 
 	match state:
 		State.IDLE:
+			anim_player.play("Idle")
 			velocity.x = 0
-			if anim_player.current_animation != "Idle" and not is_attacking:
-				anim_player.play("Idle")
 		State.CHASE:
 			state_chase(delta)
 		State.ATTACK:
@@ -181,10 +170,6 @@ func _physics_process(delta):
 			pass
 
 	move_and_slide()
-	
-	# Сбрасываем вертикальную скорость если на земле
-	if is_on_floor():
-		velocity.y = 0
 
 func _return_to_original_target():
 	if original_target and is_instance_valid(original_target):
@@ -225,26 +210,15 @@ func state_chase(delta):
 		state = State.IDLE
 		return
 	
-	var distance = global_position.distance_to(target.global_position)
-	var dir = Vector2.ZERO
-	
-	if distance < min_shooting_distance:
-		# Слишком близко - отступаем
-		dir = (global_position - target.global_position).normalized()
-	elif distance > attack_range:
-		# Слишком далеко - приближаемся
-		dir = (target.global_position - global_position).normalized()
-	else:
-		# В идеальной зоне стрельбы - стоим на месте
-		dir = Vector2.ZERO
-	
+	var dir = (target.global_position - global_position).normalized()
 	velocity.x = dir.x * move_speed
 	
-	if anim_player.current_animation != "Run" and not is_attacking:
+	if anim_player.current_animation != "Run":
 		anim_player.play("Run")
 	
-	# Проверяем, находимся ли мы в зоне стрельбы
-	if distance <= attack_range and distance >= min_shooting_distance:
+	# Если догнали - атака
+	var distance = global_position.distance_to(target.global_position)
+	if distance <= attack_range:
 		state = State.ATTACK
 
 func state_attack():
@@ -252,89 +226,38 @@ func state_attack():
 		state = State.IDLE
 		return
 	
-	# Останавливаемся для стрельбы
-	velocity.x = 0
-	
-	var distance = global_position.distance_to(target.global_position)
-	
-	# Проверяем дистанцию
-	if distance < min_shooting_distance or distance > attack_range:
+	if can_attack and not is_attacking and target_in_attack_range():
+		perform_attack()
+	elif not target_in_attack_range():
 		state = State.CHASE
-		return
-	
-	if can_attack and not is_attacking:
-		perform_ranged_attack()
 
-func perform_ranged_attack():
+func perform_attack():
 	can_attack = false
 	is_attacking = true
 	velocity.x = 0
-	
-	# Проигрываем анимацию атаки
-	if anim_player.has_animation("Attack"):
-		anim_player.play("Attack")
-	else:
-		# Если нет анимации Attack, используем Idle
-		anim_player.play("Idle")
-	
-	# Ждём момент выстрела (0.4 секунды)
-	await get_tree().create_timer(0.4).timeout
-	
-	# Стреляем
-	shoot_projectile()
-	
-	# Ждём окончания анимации
-	if anim_player.has_animation("Attack"):
-		await anim_player.animation_finished
-	else:
-		# Если нет анимации, ждём немного
-		await get_tree().create_timer(0.4).timeout
-	
+	anim_player.play("Attack")
+
+	await get_tree().create_timer(0.3).timeout
+	apply_attack_damage_to_target()
+
+	await anim_player.animation_finished
 	is_attacking = false
-	
-	# Ждём кулдаун
 	await get_tree().create_timer(attack_cooldown).timeout
 	can_attack = true
 
-func shoot_projectile():
-	if not projectile_scene or not target or not is_instance_valid(target):
-		print("⚠️ Не могу выстрелить: нет снаряда или цели")
+func apply_attack_damage_to_target():
+	if not target or not is_instance_valid(target):
 		return
 	
-	print("🎯 Цель для выстрела: ", target.name)
-	print("🎯 Группы цели: ", target.get_groups())
-	print("🎯 Тип цели: ", target.get_class())
+	print("⚔️ Враг атакует:", target.name)
 	
-	var projectile = projectile_scene.instantiate()
-	
-	# Устанавливаем позицию выстрела
-	projectile.global_position = shoot_point.global_position
-	
-	# Рассчитываем направление к цели
-	var direction = (target.global_position - shoot_point.global_position).normalized()
-	print("🎯 Направление выстрела: ", direction)
-	
-	# Передаём параметры снаряду
-	if projectile.has_method("setup"):
-		projectile.setup(direction, projectile_speed, attack_damage)
-	
-	# Настраиваем спрайт снаряда
-	if projectile.has_node("Sprite2D"):
-		projectile.get_node("Sprite2D").rotation = direction.angle()
-	elif projectile.has_node("AnimatedSprite2D"):
-		projectile.get_node("AnimatedSprite2D").rotation = direction.angle()
-	
-	# Добавляем в сцену (в родителя врага)
-	get_parent().add_child(projectile)
-	
-	print("🔫 Враг стреляет в ", target.name)
+	if target.is_in_group("great_cheese") and target.has_method("take_damage"):
+		target.take_damage(attack_damage)
+	elif target.is_in_group("players") and target.has_method("take_damage"):
+		target.take_damage(attack_damage)
 
 func target_in_attack_range() -> bool:
-	if not target or not is_instance_valid(target):
-		return false
-	
-	var distance = global_position.distance_to(target.global_position)
-	return distance <= attack_range and distance >= min_shooting_distance
+	return target and is_instance_valid(target) and global_position.distance_to(target.global_position) <= attack_range
 
 func _on_hit_box_area_entered(area):
 	if area.is_in_group("player_attack"):
@@ -357,16 +280,8 @@ func take_damage(amount: float):
 		die()
 	else:
 		state = State.HURT
-		
-		# Проигрываем анимацию получения урона если есть
-		if anim_player.has_animation("Hurt"):
-			anim_player.play("Hurt")
-			await anim_player.animation_finished
-		else:
-			# Или просто ждём короткое время
-			await get_tree().create_timer(0.3).timeout
-		
-		# Возвращаемся к предыдущему состоянию
+		anim_player.play("Hurt")
+		await anim_player.animation_finished
 		if target and target_in_attack_range():
 			state = State.ATTACK
 		else:
@@ -387,54 +302,24 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Применяем бонус шанса дропа от Salli
-	var drop_multiplier = 1.0
-	var crystal_multiplier = 1.0
-	
-	if save_system:
-		# Получаем уровень улучшения дропа от Salli
-		var drop_level = save_system.get_npc_upgrade_level("salli_drop_chance")
-		if drop_level > 0:
-			# Каждый уровень даёт +5% к шансу дропа (0.05)
-			drop_multiplier = 1.0 + (drop_level * 0.05)
-			crystal_multiplier = 1.0 + (drop_level * 0.05)
-			print("🎯 Бонус дропа от Salli: ×", drop_multiplier, " (уровень ", drop_level, ")")
-	
-	# Шанс выпадения обычного лута (мусора) с учётом бонуса
-	var final_item_chance = item_drop_chance * drop_multiplier
-	# Ограничиваем максимальный шанс 80%
-	final_item_chance = min(final_item_chance, 0.8)
-	
-	if item_drop_scene and randf() <= final_item_chance:
+	# Шанс выпадения обычного лута (мусора) - 20%
+	if item_drop_scene and randf() <= item_drop_chance:
 		var item = item_drop_scene.instantiate()
 		if item.has_method("set_enemy_id"):
 			item.set_enemy_id(my_unique_id)
 		get_parent().add_child(item)
 		item.global_position = global_position
-		print("📦 Обычный лут выпал (шанс: ", int(final_item_chance * 100), "%)")
+		print("📦 Обычный лут выпал (шанс: ", item_drop_chance * 100, "%)")
 	
-	# Шанс выпадения кристалла с учётом бонуса
-	var final_crystal_chance = crystal_drop_chance * crystal_multiplier
-	# Ограничиваем максимальный шанс 70%
-	final_crystal_chance = min(final_crystal_chance, 0.7)
-	
-	if crystal_drop_scene and randf() <= final_crystal_chance:
+	# Шанс выпадения кристалла - 25%
+	if crystal_drop_scene and randf() <= crystal_drop_chance:
 		var crystal = crystal_drop_scene.instantiate()
 		if crystal.has_method("set_enemy_id"):
 			crystal.set_enemy_id(my_unique_id)
 		get_parent().add_child(crystal)
 		crystal.global_position = global_position
-		print("💎 Кристалл выпал (шанс: ", int(final_crystal_chance * 100), "%)")
-	
-	# Даём валюту игроку за убийство
-	var player = get_tree().get_first_node_in_group("players")
-	if player and is_instance_valid(player):
-		var kill_reward = 10
-		player.currency += kill_reward
-		if player.has_signal("currency_changed"):
-			player.emit_signal("currency_changed", player.currency)
-		print("💰 Награда за убийство: +", kill_reward, " Trash")
-	
+		print("💎 Кристалл выпал (шанс: ", crystal_drop_chance * 100, "%)")
+
 	# Отмечаем врага как убитого
 	if save_system and my_unique_id != "":
 		save_system.mark_enemy_killed(my_unique_id)
@@ -445,11 +330,14 @@ func die():
 	# Эмитируем сигнал смерти для WaveManager
 	get_tree().call_group("wave_manager", "_on_enemy_died")
 
+func play_random_idle():
+	var idle_animations = ["Idle", "Idle2"]
+	if idle_animations.size() > 0:
+		anim_player.play(idle_animations[randi() % idle_animations.size()])
+
 func _on_attack_range_body_entered(body):
 	if (body.is_in_group("great_cheese") or body.is_in_group("players")) and target == body:
-		var distance = global_position.distance_to(body.global_position)
-		if distance >= min_shooting_distance:
-			state = State.ATTACK
+		state = State.ATTACK
 
 func _on_attack_range_body_exited(body):
 	if (body.is_in_group("great_cheese") or body.is_in_group("players")) and state != State.HURT:
@@ -474,6 +362,3 @@ func stop_moving():
 	velocity = Vector2.ZERO
 	if anim_player:
 		anim_player.play("Idle")
-
-func apply_wave_bonus(wave_number: int):
-	pass

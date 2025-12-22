@@ -136,6 +136,13 @@ func _on_retry_pressed():
 func _restore_player_health():
 	"""Восстанавливает здоровье игрока до максимального"""
 	var player = get_tree().get_first_node_in_group("players")
-	if player and player.has_method("heal_to_full"):
-		player.heal_to_full()
-		print("❤️ Здоровье игрока восстановлено до максимума!")
+	if player:
+		# Восстанавливаем здоровье
+		if player.has_method("heal_to_full"):
+			player.heal_to_full()
+			print("❤️ Здоровье игрока восстановлено до максимума!")
+		
+		# ВОССТАНАВЛИВАЕМ СЫР!
+		if player.has_method("restore_all_cheese_to_full"):
+			player.restore_all_cheese_to_full()
+			print("🧀 Сыр игрока восстановлен до полного!")

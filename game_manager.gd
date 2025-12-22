@@ -10,12 +10,14 @@ var game_time: float = 0.0
 var is_game_active: bool = false
 
 # Настройки сложности
+# game_manager.gd - ДОБАВИТЬ В difficulty_settings:
 var difficulty_settings = {
 	Difficulty.KITTEN: {
 		"enemy_hp_multiplier": 0.8,
 		"enemy_damage_multiplier": 0.7,
 		"spawn_rate_multiplier": 0.8,
 		"reward_multiplier": 1.0,
+		"max_waves": 8,  # ← ДОБАВЛЕНО
 		"index": 0,
 		"name": "Котенок"
 	},
@@ -24,6 +26,7 @@ var difficulty_settings = {
 		"enemy_damage_multiplier": 1.0,
 		"spawn_rate_multiplier": 1.0,
 		"reward_multiplier": 1.2,
+		"max_waves": 10,  # ← ДОБАВЛЕНО
 		"index": 1,
 		"name": "Кот"
 	},
@@ -32,6 +35,7 @@ var difficulty_settings = {
 		"enemy_damage_multiplier": 1.3,
 		"spawn_rate_multiplier": 1.5,
 		"reward_multiplier": 1.5,
+		"max_waves": 12,  # ← ДОБАВЛЕНО
 		"index": 2,
 		"name": "Страшный"
 	}
@@ -85,6 +89,20 @@ func start_game():
 	wave_number = 0
 	game_time = 0.0
 	is_game_active = true
+	
+	# Восстанавливаем ресурсы игроку при старте игры
+	var player = get_tree().get_first_node_in_group("players")
+	if player:
+		# Восстанавливаем сыр
+		if player.has_method("restore_all_cheese_to_full"):
+			player.restore_all_cheese_to_full()
+			print("🧀 Сыр восстановлен при старте игры")
+		
+		# Восстанавливаем здоровье
+		if player.has_method("heal_to_full"):
+			player.heal_to_full()
+			print("❤️ Здоровье восстановлено при старте игры")
+	
 	print("Игра началась! Сложность: ", difficulty_settings[current_difficulty]["name"])
 
 func end_game():

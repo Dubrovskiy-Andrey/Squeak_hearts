@@ -122,7 +122,7 @@ func load_game():
 		print("❌ Ошибка открытия файла для чтения")
 		return false
 
-# В методе update_player_data убедитесь что сохраняется текущее здоровье:
+# ВАЖНОЕ ИСПРАВЛЕНИЕ: Добавляем сохранение информации о слотах сыра
 func update_player_data(p: Node):
 	if not p:
 		print("❌ update_player_data: player is null")
@@ -130,36 +130,83 @@ func update_player_data(p: Node):
 	
 	print("💾 update_player_data вызван для: ", p.name)
 	
-	var player_data = {
-		"currency": p.currency if "currency" in p else 0,
-		"health": p.current_health if "current_health" in p else p.max_health if "max_health" in p else 100.0,
-		"max_health": p.max_health if "max_health" in p else 100.0,
-		"damage": p.attack_damage if "attack_damage" in p else 20,
-		"position_x": p.global_position.x,
-		"position_y": p.global_position.y
-	}
+	# Используем безопасный доступ к свойствам
+	var player_data = {}
+	
+	# Проверяем наличие свойств по-разному
+	if "currency" in p:
+		player_data["currency"] = p.currency
+	else:
+		player_data["currency"] = 0
+	
+	if "current_health" in p:
+		player_data["health"] = p.current_health
+	elif "max_health" in p:
+		player_data["health"] = p.max_health
+	else:
+		player_data["health"] = 100.0
+	
+	if "max_health" in p:
+		player_data["max_health"] = p.max_health
+	else:
+		player_data["max_health"] = 100.0
+	
+	if "attack_damage" in p:
+		player_data["damage"] = p.attack_damage
+	else:
+		player_data["damage"] = 20
+	
+	# Позиция всегда доступна
+	player_data["position_x"] = p.global_position.x
+	player_data["position_y"] = p.global_position.y
 	
 	# ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ СЫРА
-	if "cheese_bites" in p:
+	if p.has_method("get_cheese_data"):
+		# Если у игрока есть метод для получения полных данных о сыре
+		var cheese_data = p.get_cheese_data()
+		player_data["cheese_bites"] = cheese_data.get("bites", [0, 0, 0])
+		player_data["max_cheese_slots"] = cheese_data.get("max_slots", 3)
+		player_data["salli_extra_slots"] = cheese_data.get("salli_slots", 0)
+		print("💾 СЫР СОХРАНЕН через get_cheese_data(): ", player_data["cheese_bites"])
+	elif "cheese_bites" in p:
 		print("💾 Найден cheese_bites у игрока: ", p.cheese_bites)
 		player_data["cheese_bites"] = p.cheese_bites.duplicate()
+		
+		# Сохраняем информацию о слотах
+		if "base_max_cheese" in p:
+			player_data["base_max_cheese"] = p.base_max_cheese
+		if "salli_extra_cheese_slots" in p:
+			player_data["salli_extra_slots"] = p.salli_extra_cheese_slots
+		
 		print("💾 СЫР СОХРАНЕН В update_player_data(): ", p.cheese_bites)
 	else:
 		print("💾 cheese_bites НЕ НАЙДЕН у игрока!")
 		player_data["cheese_bites"] = [3, 3, 3]
+		player_data["max_cheese_slots"] = 3
+		player_data["salli_extra_slots"] = 0
 	
 	if "current_hit_count" in p:
 		player_data["current_hit_count"] = p.current_hit_count
 	else:
 		player_data["current_hit_count"] = 0
 	
-	print("💾 Данные игрока перед сохранением: ", player_data)
+	print("💾 Данные игрока перед сохранением: ", player_data.keys())
 	save_data["player_data"] = player_data
 
 func get_player_data() -> Dictionary:
 	print("📂 get_player_data вызван")
 	print("📂 Данные в save_data: ", save_data.get("player_data", {}))
 	return save_data.get("player_data", {}).duplicate()
+
+# НОВЫЙ МЕТОД: Получить данные о сыре с проверкой
+func get_cheese_data() -> Dictionary:
+	var player_data = get_player_data()
+	return {
+		"bites": player_data.get("cheese_bites", [0, 0, 0]),
+		"max_slots": player_data.get("max_cheese_slots", 3),
+		"salli_slots": player_data.get("salli_extra_slots", 0),
+		"current_hit_count": player_data.get("current_hit_count", 0)
+	}
 
 func mark_enemy_killed(enemy_id: String):
 	if not save_data.has("enemies_killed"):
@@ -209,9 +256,13 @@ func set_equipped_talismans(arr: Array):
 
 func set_npc_upgrade_level(npc_name: String, level: int):
 	save_data["npc_data"][npc_name + "_upgrade_level"] = level
+	print("💾 Уровень NPC сохранен: ", npc_name, " = ", level)
 
 func get_npc_upgrade_level(npc_name: String) -> int:
-	return save_data["npc_data"].get(npc_name + "_upgrade_level", 0)
+	var key = npc_name + "_upgrade_level"
+	var level = save_data["npc_data"].get(key, 0)
+	print("📂 Уровень NPC загружен: ", npc_name, " = ", level)
+	return level
 
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
@@ -245,6 +296,7 @@ func clear_save_for_new_game():
 	var old_player_data = save_data.get("player_data", {}).duplicate()
 	var old_inventory = save_data.get("inventory_data", {}).duplicate()
 	var old_talismans = save_data.get("talisman_data", {}).duplicate()
+	var old_npc_data = save_data.get("npc_data", {}).duplicate()
 	
 	# Очищаем основные данные
 	save_data = {
@@ -267,16 +319,25 @@ func clear_save_for_new_game():
 		save_data["player_data"]["currency"] = old_player_data["currency"]
 	if old_player_data.has("current_hit_count"):
 		save_data["player_data"]["current_hit_count"] = old_player_data["current_hit_count"]
+	if old_player_data.has("max_cheese_slots"):
+		save_data["player_data"]["max_cheese_slots"] = old_player_data["max_cheese_slots"]
+	if old_player_data.has("salli_extra_slots"):
+		save_data["player_data"]["salli_extra_slots"] = old_player_data["salli_extra_slots"]
 	
 	# Сохраняем талисманы
 	save_data["talisman_data"] = old_talismans.duplicate()
 	
-	# Сохраняем инвентарь
-	save_data["inventory_data"] = old_inventory.duplicate()
+	# Сохраняем инвентарь (только кристаллы и важные предметы)
+	if old_inventory.has("crystals"):
+		save_data["inventory_data"]["crystals"] = old_inventory["crystals"]
+	
+	# Сохраняем улучшения NPC (особенно Salli)
+	save_data["npc_data"] = old_npc_data.duplicate()
 	
 	print("🧹 Сырь сохранен: ", save_data["player_data"].get("cheese_bites", []))
 	print("🧹 Валюта сохранена: ", save_data["player_data"].get("currency", 0))
 	print("🧹 Талисманы сохранены: ", save_data["talisman_data"]["equipped_talismans"])
+	print("🧹 NPC данные сохранены: ", save_data["npc_data"])
 
 func get_saved_scene_path() -> String:
 	return save_data.get("scene_name", "")

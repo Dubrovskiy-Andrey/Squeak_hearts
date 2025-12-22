@@ -124,6 +124,18 @@ func start_game():
 	is_game_active = true
 	is_game_over = false
 	
+	# Восстанавливаем сыр игроку при старте арены
+	if player:
+		# Восстанавливаем сыр
+		if player.has_method("restore_all_cheese_to_full"):
+			player.restore_all_cheese_to_full()
+			print("🧀 Сыр восстановлен при старте арены")
+		
+		# Восстанавливаем здоровье
+		if player.has_method("heal_to_full"):
+			player.heal_to_full()
+			print("❤️ Здоровье восстановлено при старте арены")
+	
 	# Создаем таймер выживания
 	survival_timer = Timer.new()
 	add_child(survival_timer)

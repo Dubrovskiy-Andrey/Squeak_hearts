@@ -1,0 +1,18 @@
+Sally: За кристаллы я могу дать тебе особые улучшения, что выберешь?
+- Дополнительный сыр за {current_crystal_cost} кристаллов
+	if {extra_cheese_level} < 1.0:
+		[signal arg="upgrade_extra_cheese"]
+	elif {extra_cheese_level} >= 1.0:
+		Sally: У тебя уже есть максимальное количество дополнительных сыров!
+- Удача охотника за {current_crystal_cost} кристаллов
+	if {drop_chance_level} <= 3.0:
+		[signal arg="upgrade_drop_chance"]
+	elif {drop_chance_level} > 3.0:
+		Sally: Удача охотника максимальна!
+- Усиление сыра за {current_crystal_cost} кристаллов
+	if {cheese_health_level} < 3.0:
+		[signal arg="upgrade_cheese_health"]
+	elif {cheese_health_level} >= 3.0:
+		Sally: Сыр уже максимально усилен!
+- Назад
+	[signal arg="salli_upgrade_timeline"]

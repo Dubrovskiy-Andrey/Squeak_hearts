@@ -11,7 +11,18 @@ signal destroyed
 var is_destroyed: bool = false
 
 func _ready():
-	print("🧀 Сыр создан! HP:", current_health, "/", max_health)
+	print("🧀 Сыр создан!")
+	
+	# Применяем бонус HP от улучшения Salli
+	if save_system:
+		var cheese_level = save_system.get_npc_upgrade_level("salli_cheese_health")
+		if cheese_level > 0:
+			var bonus_hp = cheese_level * 200  # +200 HP за уровень
+			max_health += bonus_hp
+			current_health = max_health
+			print("🧀 Бонус HP от Salli: +", bonus_hp, " HP. Теперь HP:", current_health, "/", max_health)
+	
+	print("🧀 Итоговое HP сыра: ", current_health, "/", max_health)
 	
 	# ТОЛЬКО ГРУППА, коллизии в инспекторе
 	add_to_group("great_cheese")
