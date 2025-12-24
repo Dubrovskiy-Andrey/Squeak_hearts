@@ -4,7 +4,6 @@ const NUM_INVENTORY_SLOTS = 20
 const NUM_TALISMAN_SLOTS = 20
 
 var inventory = {
-	0: ["Key", 1],
 }
 
 var talisman_inventory = {

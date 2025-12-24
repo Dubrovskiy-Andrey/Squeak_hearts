@@ -563,6 +563,10 @@ func _on_continue_game_button_pressed():
 		# Загружаем сохранение
 		save_system.load_game()
 		
+		# Получаем данные обучения
+		var tutorial_data = save_system.get_tutorial_data()
+		print("📂 Загруженные данные обучения:", tutorial_data)
+		
 		# Получаем путь к сохраненной сцене
 		var scene = save_system.get_saved_scene_path()
 		if scene != "" and ResourceLoader.exists(scene):

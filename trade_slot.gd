@@ -6,6 +6,12 @@ extends Panel
 
 signal slot_clicked(slot_index, item_name, item_amount)
 
+# Тултипы
+var tooltip_scene = preload("res://scenes/ui/tooltip.tscn")
+var tooltip_instance = null
+var show_tooltip_timer: Timer
+var is_hovering: bool = false
+
 var slot_index: int = 0
 var item_name: String = ""
 var item_amount: int = 0
@@ -39,6 +45,17 @@ func _ready():
 		fallback_style.border_width_bottom = 2
 		add_theme_stylebox_override("panel", fallback_style)
 	
+	# Таймер для тултипа
+	show_tooltip_timer = Timer.new()
+	add_child(show_tooltip_timer)
+	show_tooltip_timer.one_shot = true
+	show_tooltip_timer.wait_time = 0.3  # Показывать через 0.3 секунды
+	show_tooltip_timer.timeout.connect(_show_tooltip)
+	
+	# Подключаем сигналы мыши
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	
 	# Инициализируем лейблы как невидимые
 	if amount_label:
 		amount_label.visible = false
@@ -47,6 +64,46 @@ func _ready():
 		price_label.visible = false
 	
 	call_deferred("update_display")
+
+func _process(_delta):
+	# Обновляем позицию тултипа, если он есть и мы наводим мышью
+	if tooltip_instance and is_hovering and tooltip_instance.visible:
+		tooltip_instance.update_position(get_global_mouse_position())
+
+func _on_mouse_entered():
+	# Только для НЕвалютных слотов с предметами
+	if item_name != "" and not is_currency_slot and is_clickable:
+		is_hovering = true
+		show_tooltip_timer.start()
+		# Подсветка слота
+		self_modulate = Color(1.2, 1.2, 1.2, 1.0)
+
+func _on_mouse_exited():
+	is_hovering = false
+	show_tooltip_timer.stop()
+	_hide_tooltip()
+	# Убираем подсветку
+	self_modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+func _show_tooltip():
+	if is_hovering and item_name != "" and not is_currency_slot and is_clickable:
+		# Создаем тултип
+		tooltip_instance = tooltip_scene.instantiate()
+		get_tree().root.add_child(tooltip_instance)
+		tooltip_instance.z_index = 1000  # Чтобы был поверх всего
+		
+		# Показываем тултип рядом с мышью
+		var mouse_pos = get_global_mouse_position()
+		tooltip_instance.show_tooltip(item_name, mouse_pos)
+
+func _hide_tooltip():
+	if tooltip_instance and is_instance_valid(tooltip_instance):
+		tooltip_instance.hide_tooltip()
+		# Ждем окончания анимации скрытия
+		await get_tree().create_timer(0.16).timeout
+		if is_instance_valid(tooltip_instance):
+			tooltip_instance.queue_free()
+	tooltip_instance = null
 
 # Включает/выключает возможность клика
 func set_clickable(clickable: bool):
@@ -197,10 +254,7 @@ func _gui_input(event):
 		if event.button_index == MOUSE_BUTTON_LEFT and is_clickable and item_name != "" and not is_currency_slot:
 			print("🖱️ Клик на слоте", slot_index, ":", item_name)
 			slot_clicked.emit(slot_index, item_name, item_amount)
-	
-	# Эффект при наведении (только для кликабельных НЕвалютных слотов)
-	if event is InputEventMouseMotion and is_clickable and not is_currency_slot:
-		if item_name != "":
-			self_modulate = Color(1, 1, 1, 1.2)
-		else:
-			self_modulate = Color(1, 1, 1, 1.0)
+
+func _exit_tree():
+	# Убираем тултип при удалении слота
+	_hide_tooltip()

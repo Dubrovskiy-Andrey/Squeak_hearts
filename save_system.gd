@@ -12,7 +12,15 @@ var save_data := {
 	"campfire_id": "",
 	"enemies_killed": {},
 	"items_collected": {},
-	"campfire_restore_points": {}
+	"campfire_restore_points": {},
+	# ДОБАВИМ данные обучения
+	"tutorial_data": {
+		"tutorial_completed": false,
+		"need_tutorial": true,
+		"tutorial_skipped": false,
+		"quests_completed": {},  # Состояние каждого квеста
+		"quests_progress": {}    # Прогресс квестов (счетчики)
+	}
 }
 
 func _ready():
@@ -63,6 +71,7 @@ func save_game(player: Node = null):
 	else:
 		print("❌ Ошибка открытия файла для сохранения")
 		return false
+
 
 func quick_save(player: Node):
 	save_data["last_save_type"] = "quick"
@@ -288,57 +297,6 @@ func clear_save():
 	
 	print("🧹 Все данные сохранения очищены")
 
-func clear_save_for_new_game():
-	"""Очищает только прогресс, но сохраняет сыр и валюту"""
-	print("🧹 Очищаем сохранение для новой игры...")
-	
-	# Сохраняем важные данные игрока
-	var old_player_data = save_data.get("player_data", {}).duplicate()
-	var old_inventory = save_data.get("inventory_data", {}).duplicate()
-	var old_talismans = save_data.get("talisman_data", {}).duplicate()
-	var old_npc_data = save_data.get("npc_data", {}).duplicate()
-	
-	# Очищаем основные данные
-	save_data = {
-		"player_data": {},
-		"inventory_data": {},
-		"talisman_data": {"equipped_talismans": ["", "", ""]},
-		"npc_data": {},
-		"scene_name": "",
-		"last_save_type": "manual",
-		"campfire_id": "",
-		"enemies_killed": {},
-		"items_collected": {},
-		"campfire_restore_points": {}
-	}
-	
-	# Восстанавливаем сыр, валюту и т.д.
-	if old_player_data.has("cheese_bites"):
-		save_data["player_data"]["cheese_bites"] = old_player_data["cheese_bites"].duplicate()
-	if old_player_data.has("currency"):
-		save_data["player_data"]["currency"] = old_player_data["currency"]
-	if old_player_data.has("current_hit_count"):
-		save_data["player_data"]["current_hit_count"] = old_player_data["current_hit_count"]
-	if old_player_data.has("max_cheese_slots"):
-		save_data["player_data"]["max_cheese_slots"] = old_player_data["max_cheese_slots"]
-	if old_player_data.has("salli_extra_slots"):
-		save_data["player_data"]["salli_extra_slots"] = old_player_data["salli_extra_slots"]
-	
-	# Сохраняем талисманы
-	save_data["talisman_data"] = old_talismans.duplicate()
-	
-	# Сохраняем инвентарь (только кристаллы и важные предметы)
-	if old_inventory.has("crystals"):
-		save_data["inventory_data"]["crystals"] = old_inventory["crystals"]
-	
-	# Сохраняем улучшения NPC (особенно Salli)
-	save_data["npc_data"] = old_npc_data.duplicate()
-	
-	print("🧹 Сырь сохранен: ", save_data["player_data"].get("cheese_bites", []))
-	print("🧹 Валюта сохранена: ", save_data["player_data"].get("currency", 0))
-	print("🧹 Талисманы сохранены: ", save_data["talisman_data"]["equipped_talismans"])
-	print("🧹 NPC данные сохранены: ", save_data["npc_data"])
-
 func get_saved_scene_path() -> String:
 	return save_data.get("scene_name", "")
 
@@ -372,3 +330,102 @@ func get_purchased_items() -> Dictionary:
 
 func set_purchased_items(items: Dictionary):
 	save_data["purchased_items"] = items.duplicate(true)
+
+func save_tutorial_progress(tutorial_node):
+	"""Сохраняет прогресс обучения из TutorialQuests"""
+	if not tutorial_node or not tutorial_node.has_method("get_tutorial_state"):
+		print("❌ TutorialQuests не найден или не имеет метода get_tutorial_state")
+		return
+	
+	var tutorial_state = tutorial_node.get_tutorial_state()
+	save_data["tutorial_data"] = tutorial_state
+	print("💾 Прогресс обучения сохранен:", tutorial_state)
+
+func load_tutorial_progress():
+	"""Загружает прогресс обучения"""
+	print("📂 Загружаем прогресс обучения:", save_data.get("tutorial_data", {}))
+	return save_data.get("tutorial_data", {}).duplicate()
+
+func get_tutorial_data() -> Dictionary:
+	"""Получает данные обучения"""
+	return save_data.get("tutorial_data", {
+		"tutorial_completed": false,
+		"need_tutorial": true,
+		"tutorial_skipped": false,
+		"quests_completed": {},
+		"quests_progress": {}
+	})
+
+func set_tutorial_completed(value: bool):
+	"""Устанавливает флаг завершения обучения"""
+	save_data["tutorial_data"]["tutorial_completed"] = value
+	print("💾 tutorial_completed установлен:", value)
+
+func set_need_tutorial(value: bool):
+	"""Устанавливает флаг необходимости обучения"""
+	save_data["tutorial_data"]["need_tutorial"] = value
+	print("💾 need_tutorial установлен:", value)
+
+func set_tutorial_skipped(value: bool):
+	"""Устанавливает флаг пропуска обучения"""
+	save_data["tutorial_data"]["tutorial_skipped"] = value
+	print("💾 tutorial_skipped установлен:", value)
+
+func clear_save_for_new_game():
+	"""Очищает только прогресс, но сохраняет сыр и валюту"""
+	print("🧹 Очищаем сохранение для новой игры...")
+	
+	# Сохраняем важные данные игрока
+	var old_player_data = save_data.get("player_data", {}).duplicate()
+	var old_inventory = save_data.get("inventory_data", {}).duplicate()
+	var old_talismans = save_data.get("talisman_data", {}).duplicate()
+	var old_npc_data = save_data.get("npc_data", {}).duplicate()
+	
+	# Очищаем основные данные
+	save_data = {
+		"player_data": {},
+		"inventory_data": {},
+		"talisman_data": {"equipped_talismans": ["", "", ""]},
+		"npc_data": {},
+		"scene_name": "",
+		"last_save_type": "manual",
+		"campfire_id": "",
+		"enemies_killed": {},
+		"items_collected": {},
+		"campfire_restore_points": {},
+		# Сбрасываем обучение
+		"tutorial_data": {
+			"tutorial_completed": false,
+			"need_tutorial": true,
+			"tutorial_skipped": false,
+			"quests_completed": {},
+			"quests_progress": {}
+		}
+	}
+	
+	# Восстанавливаем сыр, валюту и т.д.
+	if old_player_data.has("cheese_bites"):
+		save_data["player_data"]["cheese_bites"] = old_player_data["cheese_bites"].duplicate()
+	if old_player_data.has("currency"):
+		save_data["player_data"]["currency"] = old_player_data["currency"]
+	if old_player_data.has("current_hit_count"):
+		save_data["player_data"]["current_hit_count"] = old_player_data["current_hit_count"]
+	if old_player_data.has("max_cheese_slots"):
+		save_data["player_data"]["max_cheese_slots"] = old_player_data["max_cheese_slots"]
+	if old_player_data.has("salli_extra_slots"):
+		save_data["player_data"]["salli_extra_slots"] = old_player_data["salli_extra_slots"]
+	
+	# Сохраняем талисманы
+	save_data["talisman_data"] = old_talismans.duplicate()
+	
+	# Сохраняем инвентарь (только кристаллы и важные предметы)
+	if old_inventory.has("crystals"):
+		save_data["inventory_data"]["crystals"] = old_inventory["crystals"]
+	
+	# Сохраняем улучшения NPC (особенно Salli)
+	save_data["npc_data"] = old_npc_data.duplicate()
+	
+	print("🧹 Сырь сохранен: ", save_data["player_data"].get("cheese_bites", []))
+	print("🧹 Валюта сохранена: ", save_data["player_data"].get("currency", 0))
+	print("🧹 Талисманы сохранены: ", save_data["talisman_data"]["equipped_talismans"])
+	print("🧹 NPC данные сохранены: ", save_data["npc_data"])

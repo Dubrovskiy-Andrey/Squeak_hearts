@@ -84,8 +84,8 @@ func _check_prerequisite_quests():
 	
 	if tutorial_quests and tutorial_quests.has_method("is_tutorial_active"):
 		if tutorial_quests.is_tutorial_active():
-			# Получаем список всех квестов кроме арены
-			var required_quests = ["move", "attack", "talk_salli", "talk_trader"]
+			# Получаем список всех квестов кроме арены, теперь включая ability
+			var required_quests = ["move", "attack", "ability", "talk_salli", "talk_trader"]
 			var completed_count = 0
 			
 			for quest_id in required_quests:
@@ -106,7 +106,7 @@ func _check_prerequisite_quests():
 				all_prerequisite_quests_done = false
 				print("⚠️ Выполнено", completed_count, "из", required_quests.size(), "квестов")
 		else:
-			print("⚠️ Обучение не активно, пропускаем проверку")
+			print("⚠️ Обучение не активнo, пропускаем проверку")
 			all_prerequisite_quests_done = true  # Если обучение не активно, разрешаем вход
 	else:
 		print("⚠️ TutorialQuests не найден, пропускаем проверку")
@@ -177,6 +177,17 @@ func complete_tutorial_quest():
 				if tutorial_quests.complete_object_quest("campfire"):
 					print("✅ Квест 'арена' успешно завершен")
 					tutorial_quest_completed = true
+					
+					# СОХРАНЯЕМ ИГРУ ПОСЛЕ ВЫПОЛНЕНИЯ КВЕСТА
+					var save_sys = get_node_or_null("/root/save_system")
+					if save_sys:
+						# Сохраняем прогресс обучения
+						if tutorial_quests.has_method("_save_tutorial_progress"):
+							tutorial_quests._save_tutorial_progress()
+						# Сохраняем игру
+						var player = get_tree().get_first_node_in_group("players")
+						if player:
+							save_sys.save_game(player)
 				else:
 					print("⚠️ Квест 'арена' не был найден или уже выполнен")
 			else:
@@ -225,3 +236,4 @@ func show_quest_complete_message():
 # ВАЖНО: фиксируем scale каждый кадр на оригинальном значении
 func _process(delta):
 	sprite.scale = original_scale
+	

@@ -7,38 +7,51 @@ var anim_player: AnimationPlayer
 var timer: Timer
 var started_from_manager = false
 
+# Массив квестов с поддержкой сохранения прогресса
 var tutorial_quests = [
 	{
 		"id": "move",
 		"text": "Подвигайся: [A][D] и [ПРОБЕЛ] для прыжка",
 		"required_inputs": ["ui_left", "ui_right", "ui_up"],
 		"completed_inputs": {},
-		"done": false
+		"done": false,
+		"type": "input"
 	},
 	{
 		"id": "attack",
 		"text": "Атакуй воздух: [ЛКМ] или [ПРОБЕЛ]",
 		"required_count": 3,
 		"current_count": 0,
-		"done": false
+		"done": false,
+		"type": "counter"
+	},
+	{
+		"id": "ability",
+		"text": "Используй способность: [F]-ярость, [G]-скорость или [H]-лечение",
+		"required_keys": ["damage_buff", "speed_buff", "heal_buff"],
+		"done": false,
+		"type": "input"
 	},
 	{
 		"id": "talk_salli",
 		"text": "Поговори с Salli (подойди и нажми E)",
 		"npc_name": "salli",
-		"done": false
+		"done": false,
+		"type": "npc"
 	},
 	{
 		"id": "talk_trader",
 		"text": "Поговори с Торговцем",
 		"npc_name": "trader",
-		"done": false
+		"done": false,
+		"type": "npc"
 	},
 	{
 		"id": "arena",
 		"text": "Найди костёр и начни арену",
 		"target_object": "campfire",
-		"done": false
+		"done": false,
+		"type": "object"
 	}
 ]
 
@@ -47,47 +60,98 @@ var player = null
 var is_active = false
 var lore_shown = false
 var lore_panel = null
+var ui_created = false
 
 func _ready():
 	layer = 50
 	
-	# 1. Создаем UI
-	_create_ui()
+	# Ждем загрузки save_system
+	await get_tree().process_frame
 	
-	# 2. Добавляем в группу для легкого доступа
-	add_to_group("tutorial_quests")
-	
-	# 3. Проверяем, нужно ли запускать обучение автоматически
 	var save_sys = get_node_or_null("/root/save_system")
 	if save_sys:
-		var player_data = save_sys.get_player_data()
-		var need_tutorial = player_data.get("need_tutorial", false)
-		var tutorial_skipped = player_data.get("tutorial_skipped", false)
+		# ЗАГРУЖАЕМ ПРОГРЕСС ИЗ СОХРАНЕНИЯ
+		_load_tutorial_progress()
+		
+		var tutorial_data = save_sys.get_tutorial_data()
+		var need_tutorial = tutorial_data.get("need_tutorial", true)
+		var tutorial_skipped = tutorial_data.get("tutorial_skipped", false)
+		var tutorial_completed = tutorial_data.get("tutorial_completed", false)
 		
 		print("📊 TutorialQuests: проверка состояния обучения")
 		print("  - need_tutorial:", need_tutorial)
 		print("  - tutorial_skipped:", tutorial_skipped)
+		print("  - tutorial_completed:", tutorial_completed)
+		print("  - lore_shown:", lore_shown)
+		print("  - is_active:", is_active)
 		
-		if need_tutorial and not tutorial_skipped:
+		# Проверяем, нужно ли загружать обучение
+		if need_tutorial and not tutorial_skipped and not tutorial_completed:
+			print("🎮 TutorialQuests: обучение требуется")
+			
 			# Ждем немного, чтобы все загрузилось
 			await get_tree().create_timer(0.5).timeout
-			print("🎮 TutorialQuests: запускаем обучение автоматически")
-			start_tutorial()
+			
+			# Проверяем, был ли уже показан лор
+			if lore_shown:
+				# Лор уже показан - создаем UI и восстанавливаем
+				print("📖 Лор уже показан, создаем UI квестов")
+				_create_ui()
+				ui_created = true
+				restore_from_save()
+			else:
+				# Обучение еще не начиналось
+				print("🎮 TutorialQuests: запускаем обучение с нуля")
+				start_tutorial()
+		elif tutorial_completed:
+			# Обучение уже завершено - СКРЫВАЕМ, но не удаляем!
+			print("✅ Обучение уже пройдено, скрываем систему")
+			visible = false  # Просто скрываем
+			set_process(false)  # Отключаем обработку
+			# НЕ queue_free() - оставляем в сцене!
 		else:
-			print("🚀 TutorialQuests: обучение не требуется, удаляем себя")
-			queue_free()
-			return
+			print("🚀 TutorialQuests: обучение не требуется, скрываем")
+			visible = false
+			set_process(false)
 	else:
-		print("⚠️ TutorialQuests: save_system не найден, удаляем себя")
-		queue_free()
-		return
+		print("⚠️ TutorialQuests: save_system не найден, скрываем")
+		visible = false
+		set_process(false)
 	
-	print("✅ Система обучающих квестов готова")
+	print("✅ TutorialQuests инициализирован")
+
+func restore_from_save():
+	"""Восстанавливает UI после загрузки сохранения"""
+	print("🔄 TutorialQuests: восстановление из сохранения")
+	
+	# Восстанавливаем игрока
+	player = get_tree().get_first_node_in_group("players")
+	if not player:
+		print("❌ Игрок не найден при восстановлении, пробуем через 1 секунду...")
+		await get_tree().create_timer(1.0).timeout
+		player = get_tree().get_first_node_in_group("players")
+		if not player:
+			print("❌ Игрок все еще не найден")
+			return
+	
+	print("✅ Игрок найден при восстановлении:", player.name)
+	
+	# Создаем UI квестов
+	_create_quest_ui()
+	
+	# Показываем панель квестов
+	_show_quests_panel_silent()
+	
+	# Включаем обработку
+	set_process(true)
+	
+	print("✅ UI квестов восстановлен")
 
 func _create_ui():
 	print("🛠️ Создание UI квестов через код...")
 	_create_quests_panel()
 	print("✅ Весь UI создан успешно!")
+	ui_created = true
 
 func _create_quests_panel():
 	quests_panel = Panel.new()
@@ -177,6 +241,10 @@ func start_tutorial():
 	
 	print("✅ Игрок найден:", player.name)
 	
+	# Создаем UI
+	if not ui_created:
+		_create_ui()
+	
 	if player.has_method("set_can_move"):
 		player.set_can_move(false)
 	
@@ -184,6 +252,13 @@ func start_tutorial():
 
 func show_lore():
 	print("📖 Показываем лор игры...")
+	
+	# Проверяем, не был ли лор уже показан
+	if lore_shown:
+		print("📖 Лор уже был показан ранее, пропускаем")
+		_on_lore_continue_pressed()
+		return
+	
 	lore_panel = Panel.new()
 	lore_panel.name = "LorePanel"
 	lore_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -206,6 +281,11 @@ func show_lore():
 • [color=yellow]Прокачиваться[/color] у Salli
 • [color=yellow]Покупать снаряжение[/color] у Торговца  
 • [color=yellow]Тренироваться[/color] на Арене
+
+Твои способности:
+• [color=red][F] - Ярость: увеличивает урон[/color]
+• [color=cyan][G] - Ускорение: увеличивает скорость[/color]
+• [color=green][H] - Лечение: восстанавливает здоровье[/color]
 
 Но будь осторожен — враги уже на подходе...[/font_size][/color][/center]"""
 	
@@ -279,6 +359,9 @@ func _on_lore_continue_pressed():
 	print("📖 Лор прочитан")
 	lore_shown = true
 	
+	# Сохраняем, что лор был показан
+	_save_tutorial_progress()
+	
 	if lore_panel:
 		var tween = create_tween()
 		tween.tween_property(lore_panel, "modulate:a", 0.0, 0.5)
@@ -313,7 +396,11 @@ func _create_quest_item(quest):
 	
 	var checkbox = Label.new()
 	checkbox.name = "Checkbox"
-	checkbox.text = "⬜"
+	if quest["done"]:
+		checkbox.text = "✅"
+		checkbox.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
+	else:
+		checkbox.text = "⬜"
 	checkbox.add_theme_font_size_override("font_size", 20)
 	checkbox.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	checkbox.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -322,9 +409,20 @@ func _create_quest_item(quest):
 	
 	var label = Label.new()
 	label.name = "Text"
-	label.text = quest["text"]
+	
+	# Формируем текст с учетом прогресса
+	var display_text = quest["text"]
+	if quest["id"] == "attack" and quest["current_count"] > 0:
+		display_text = quest["text"] + " (" + str(quest["current_count"]) + "/" + str(quest["required_count"]) + ")"
+	
+	label.text = display_text
+	
+	if quest["done"]:
+		label.add_theme_color_override("font_color", Color(0.7, 0.9, 0.7))
+	else:
+		label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	
 	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -350,6 +448,13 @@ func _show_quests_panel():
 	
 	print("🎯 Цели обучения показаны (справа сверху)")
 
+func _show_quests_panel_silent():
+	"""Показывает панель квестов без анимации (для восстановления)"""
+	quests_panel.visible = true
+	quests_panel.modulate.a = 1.0
+	quests_panel.position.x = get_viewport().size.x - quests_panel.size.x - 20
+	print("🎯 Цели обучения восстановлены (без анимации)")
+
 func _play_panel_attention_animation():
 	var tween = create_tween()
 	tween.set_loops(2)
@@ -372,11 +477,15 @@ func _check_quest_progress():
 				_check_movement_quest(quest)
 			"attack":
 				_check_attack_quest(quest)
+			"ability":
+				_check_ability_quest(quest)
 
 func _check_movement_quest(quest):
 	for input_action in quest.get("required_inputs", []):
 		if Input.is_action_just_pressed(input_action):
 			quest["completed_inputs"][input_action] = true
+			# Сохраняем прогресс после каждого действия
+			_save_tutorial_progress()
 	
 	if quest["completed_inputs"].size() >= quest["required_inputs"].size():
 		_complete_quest(quest["id"])
@@ -391,8 +500,19 @@ func _check_attack_quest(quest):
 			if label:
 				label.text = quest["text"] + " (" + str(quest["current_count"]) + "/" + str(quest["required_count"]) + ")"
 		
+		# Сохраняем прогресс после каждой атаки
+		_save_tutorial_progress()
+		
 		if quest["current_count"] >= quest["required_count"]:
 			_complete_quest(quest["id"])
+
+func _check_ability_quest(quest):
+	# Проверяем нажатие любой из способностей: F (damage_buff), G (speed_buff), H (heal_buff)
+	for action in quest.get("required_keys", []):
+		if Input.is_action_just_pressed(action):
+			print("🎮 Использована способность: ", action)
+			_complete_quest(quest["id"])
+			return
 
 func _complete_quest(quest_id):
 	print("🎯 _complete_quest вызван для: ", quest_id)
@@ -415,6 +535,9 @@ func _complete_quest(quest_id):
 	
 	print("✅ Отмечаем квест как выполненный: ", quest_id)
 	quest["done"] = true
+	
+	# СОХРАНЯЕМ ПРОГРЕСС ПРИ ЗАВЕРШЕНИИ КВЕСТА
+	_save_tutorial_progress()
 	
 	var quest_item = quest_items.get(quest_id)
 	if quest_item:
@@ -462,11 +585,11 @@ func _finish_tutorial():
 	
 	var save_sys = get_node_or_null("/root/save_system")
 	if save_sys:
-		var player_data = save_sys.get_player_data()
-		player_data["tutorial_completed"] = true
-		player_data["need_tutorial"] = false
-		save_sys.save_data["player_data"] = player_data
-		print("💾 Прогресс обучения сохранен")
+		save_sys.set_tutorial_completed(true)
+		save_sys.set_need_tutorial(false)
+		# Также сохраняем окончательный прогресс
+		_save_tutorial_progress()
+		print("💾 Прогресс обучения сохранен (завершено)")
 	
 	await get_tree().create_timer(1.0).timeout
 	queue_free()
@@ -497,38 +620,94 @@ func _give_tutorial_reward():
 		# 2. Сообщение
 		_show_reward_message("🎉 ОБУЧЕНИЕ ПРОЙДЕНО!\n+200 валюты")
 		
-		# 3. Сохраняем
-		if player.has_method("save_without_restore"):
-			player.save_without_restore()
-		elif "save_without_restore" in player:
-			player.save_without_restore()
-		elif player.has_method("save"):
-			player.save()
-		else:
-			print("⚠️ У игрока нет метода сохранения")
+		# 3. Сохраняем игру
+		var save_sys = get_node_or_null("/root/save_system")
+		if save_sys:
+			save_sys.save_game(player)
+			print("💾 Игра сохранена после награды")
 		
 		print("✅ Награда выдана")
 
 func _show_reward_message(text):
+	print("🎉 Показываем сообщение о награде:", text)
+	
+	# Получаем камеру или позицию игрока для ориентира
+	var reference_position = Vector2.ZERO
+	var camera = null
+	
+	if player:
+		# Ищем камеру
+		for child in player.get_children():
+			if child is Camera2D:
+				camera = child
+				break
+		
+		if camera:
+			reference_position = camera.global_position
+			print("🎥 Используем позицию камеры:", reference_position)
+		else:
+			reference_position = player.global_position
+			print("🎮 Используем позицию игрока:", reference_position)
+	else:
+		# Центр экрана
+		var viewport = get_viewport().get_visible_rect().size
+		reference_position = viewport / 2
+		print("📺 Используем центр экрана:", reference_position)
+	
+	# Создаем сообщение
 	var message = Label.new()
 	message.text = text
 	
-	var screen_size = get_viewport().size
-	message.position = Vector2(screen_size.x / 2 - 150, screen_size.y / 2 - 50)
+	# Позиционируем ЛЕВЕЕ центра (смещаем по X влево)
+	# -370 по X = левее на 370 пикселей
+	# -200 по Y = выше на 200 пикселей
+	message.position = reference_position + Vector2(-420, -400)
+	
+	# Добавляем к корневой сцене
 	get_tree().current_scene.add_child(message)
 	
-	message.add_theme_font_size_override("font_size", 32)
-	message.add_theme_color_override("font_color", Color(1, 0.8, 0.2))
+	# Стиль как в арене
+	message.add_theme_font_size_override("font_size", 42)
+	message.add_theme_color_override("font_color", Color(1, 0.9, 0.2))  # Золотой цвет
+	message.add_theme_constant_override("outline_size", 6)
+	message.add_theme_color_override("font_outline_color", Color.BLACK)
 	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	
-	var tween = create_tween()
-	tween.tween_property(message, "position:y", screen_size.y / 2 - 150, 1.0)
-	tween.parallel().tween_property(message, "modulate:a", 0.0, 1.5)
+	# Добавляем фон для лучшей читаемости
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0, 0, 0, 0.7)
+	bg_style.border_color = Color(1, 0.8, 0.2)
+	bg_style.border_width_left = 2
+	bg_style.border_width_top = 2
+	bg_style.border_width_right = 2
+	bg_style.border_width_bottom = 2
+	bg_style.corner_radius_top_left = 8
+	bg_style.corner_radius_top_right = 8
+	bg_style.corner_radius_bottom_right = 8
+	bg_style.corner_radius_bottom_left = 8
+	message.add_theme_stylebox_override("normal", bg_style)
 	
+	# Настройки отступов
+	message.size = Vector2(400, 80)  # Фиксированный размер
+	
+	# Анимация - только поднятие вверх и исчезновение
+	message.modulate.a = 1.0  # Сразу видимое
+	message.scale = Vector2(1.0, 1.0)  # Нормальный размер
+	
+	var tween = create_tween()
+	
+	# 1. Подъем вверх на 80 пикселей за 1.2 секунды
+	tween.tween_property(message, "position:y", message.position.y - 80, 1.2)
+	
+	# 2. Исчезновение через 0.5 секунды
+	tween.parallel().tween_property(message, "modulate:a", 0.0, 1.0).set_delay(0.5)
+	
+	# Удаление через время
 	await get_tree().create_timer(2.5).timeout
-	message.queue_free()
+	if is_instance_valid(message):
+		message.queue_free()
+	print("✅ Сообщение о награде скрыто")
 
-# В методе complete_npc_quest оставляем простую проверку:
 func complete_npc_quest(npc_name: String) -> bool:
 	print("🎯 complete_npc_quest для NPC: ", npc_name)
 	
@@ -578,3 +757,113 @@ func debug_complete_all_quests():
 		if not quest["done"]:
 			quest["done"] = true
 			_complete_quest(quest["id"])
+
+# ==================== МЕТОДЫ ДЛЯ СОХРАНЕНИЯ ПРОГРЕССА ====================
+
+func _save_tutorial_progress():
+	"""Сохраняет прогресс обучения в save_system"""
+	var save_sys = get_node_or_null("/root/save_system")
+	if not save_sys:
+		print("❌ save_system не найден для сохранения прогресса")
+		return
+	
+	# Собираем состояние квестов
+	var quests_completed = {}
+	var quests_progress = {}
+	
+	for quest in tutorial_quests:
+		quests_completed[quest["id"]] = quest["done"]
+		
+		# Сохраняем прогресс для квестов со счетчиками
+		if quest.has("current_count"):
+			quests_progress[quest["id"]] = {
+				"current_count": quest["current_count"]
+			}
+		# Сохраняем введенные клавиши для движения
+		elif quest.has("completed_inputs"):
+			quests_progress[quest["id"]] = {
+				"completed_inputs": quest["completed_inputs"]
+			}
+	
+	var tutorial_state = {
+		"tutorial_completed": false,  # Будет true только когда все квесты завершены
+		"need_tutorial": true,
+		"tutorial_skipped": false,
+		"quests_completed": quests_completed,
+		"quests_progress": quests_progress,
+		"is_active": is_active,
+		"lore_shown": lore_shown
+	}
+	
+	save_sys.save_data["tutorial_data"] = tutorial_state
+	print("💾 Прогресс обучения сохранен")
+
+func _load_tutorial_progress():
+	"""Загружает прогресс обучения из save_system"""
+	var save_sys = get_node_or_null("/root/save_system")
+	if not save_sys:
+		print("❌ save_system не найден для загрузки прогресса")
+		return
+	
+	var tutorial_data = save_sys.get_tutorial_data()
+	print("📂 Загружаем данные обучения:", tutorial_data)
+	
+	# Восстанавливаем глобальные флаги
+	lore_shown = tutorial_data.get("lore_shown", false)
+	is_active = tutorial_data.get("is_active", false)
+	
+	# Восстанавливаем состояние квестов
+	var quests_completed = tutorial_data.get("quests_completed", {})
+	var quests_progress = tutorial_data.get("quests_progress", {})
+	
+	for i in range(tutorial_quests.size()):
+		var quest = tutorial_quests[i]
+		var quest_id = quest["id"]
+		
+		# Восстанавливаем статус выполнения
+		if quest_id in quests_completed:
+			tutorial_quests[i]["done"] = quests_completed[quest_id]
+		
+		# Восстанавливаем прогресс
+		if quest_id in quests_progress:
+			var progress = quests_progress[quest_id]
+			
+			if tutorial_quests[i].has("current_count") and "current_count" in progress:
+				tutorial_quests[i]["current_count"] = progress["current_count"]
+			
+			if tutorial_quests[i].has("completed_inputs") and "completed_inputs" in progress:
+				tutorial_quests[i]["completed_inputs"] = progress["completed_inputs"].duplicate()
+	
+	print("✅ Прогресс обучения загружен")
+	print("📊 Состояние после загрузки:")
+	for quest in tutorial_quests:
+		print("  -", quest["id"], ":", quest["done"], 
+			" (прогресс:", quest.get("current_count", 0), 
+			" вводы:", quest.get("completed_inputs", {}).size(), ")")
+
+func get_tutorial_state() -> Dictionary:
+	"""Возвращает текущее состояние обучения для сохранения"""
+	var quests_completed = {}
+	var quests_progress = {}
+	
+	for quest in tutorial_quests:
+		quests_completed[quest["id"]] = quest["done"]
+		
+		if quest.has("current_count"):
+			quests_progress[quest["id"]] = {
+				"current_count": quest["current_count"]
+			}
+		elif quest.has("completed_inputs"):
+			quests_progress[quest["id"]] = {
+				"completed_inputs": quest["completed_inputs"].duplicate()
+			}
+	
+	return {
+		"tutorial_completed": false,
+		"need_tutorial": true,
+		"tutorial_skipped": false,
+		"quests_completed": quests_completed,
+		"quests_progress": quests_progress,
+		"is_active": is_active,
+		"lore_shown": lore_shown
+	}
