@@ -7,8 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://xk1edn7b6hr3" path="res://assets/HP/Sprite-0002 (1).png" id="5_pqir1"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_11o71"]
-radius = 66.0
-height = 132.0
+radius = 116.0
+height = 242.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8skpk"]
 atlas = ExtResource("2_fkqad")
@@ -836,12 +836,12 @@ collision_layer = 16
 script = ExtResource("1_iba0u")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -66)
+position = Vector2(2, -122)
 shape = SubResource("CapsuleShape2D_11o71")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-position = Vector2(-2.0000038, -60)
-scale = Vector2(3.653646, 3.653646)
+position = Vector2(0, -106)
+scale = Vector2(6.5976567, 6.5976567)
 sprite_frames = SubResource("SpriteFrames_8skpk")
 animation = &"Attack"
 

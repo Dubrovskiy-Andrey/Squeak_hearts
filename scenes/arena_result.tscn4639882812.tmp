@@ -2,16 +2,12 @@
 
 [ext_resource type="Script" uid="uid://dkqd6jibg30gg" path="res://arena_result.gd" id="1_7tdtj"]
 
-[node name="CanvasLayer" type="CanvasLayer"]
-script = ExtResource("1_7tdtj")
-
-[node name="Control" type="Control" parent="."]
+[node name="ArenaResult" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+script = ExtResource("1_7tdtj")
 
-[node name="Panel" type="Panel" parent="Control"]
+[node name="Panel" type="Panel" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -25,7 +21,7 @@ offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -39,34 +35,34 @@ offset_bottom = 107.25
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TitleLabel" type="Label" parent="Control/Panel/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer"]
 layout_mode = 2
 text = "Проиграл лох"
 
-[node name="StatsContainer" type="VBoxContainer" parent="Control/Panel/VBoxContainer"]
+[node name="StatsContainer" type="VBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="TimeLabel" type="Label" parent="Control/Panel/VBoxContainer/StatsContainer"]
+[node name="TimeLabel" type="Label" parent="Panel/VBoxContainer/StatsContainer"]
 layout_mode = 2
 text = "время"
 
-[node name="WavesLabel" type="Label" parent="Control/Panel/VBoxContainer/StatsContainer"]
+[node name="WavesLabel" type="Label" parent="Panel/VBoxContainer/StatsContainer"]
 layout_mode = 2
 text = "волна"
 
-[node name="RewardLabel" type="Label" parent="Control/Panel/VBoxContainer/StatsContainer"]
+[node name="RewardLabel" type="Label" parent="Panel/VBoxContainer/StatsContainer"]
 layout_mode = 2
 text = "награда"
 
-[node name="Buttons" type="HBoxContainer" parent="Control/Panel/VBoxContainer"]
+[node name="Buttons" type="HBoxContainer" parent="Panel/VBoxContainer"]
 layout_mode = 2
 
-[node name="ContinueButton" type="Button" parent="Control/Panel/VBoxContainer/Buttons"]
+[node name="ContinueButton" type="Button" parent="Panel/VBoxContainer/Buttons"]
 custom_minimum_size = Vector2(100, 30)
 layout_mode = 2
 text = "продолжить"
 
-[node name="RetryButton" type="Button" parent="Control/Panel/VBoxContainer/Buttons"]
+[node name="RetryButton" type="Button" parent="Panel/VBoxContainer/Buttons"]
 custom_minimum_size = Vector2(100, 30)
 layout_mode = 2
 text = "заново"

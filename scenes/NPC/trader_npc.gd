@@ -41,6 +41,7 @@ func _on_body_entered(body):
 		print("✅ Игрок вошел в зону")
 		if $Label:
 			$Label.visible = true
+			$Label.text = "💬"
 		can_interact = true
 
 func _on_body_exited(body):
@@ -54,6 +55,19 @@ func _on_body_exited(body):
 func start_dialog():
 	dialog_active = true
 	
+	# ✅ ЗАВЕРШАЕМ КВЕСТ ОБУЧЕНИЯ
+	var tutorial_quests = get_tree().get_first_node_in_group("tutorial_quests")
+	if not tutorial_quests:
+		tutorial_quests = get_tree().current_scene.get_node_or_null("TutorialQuests")
+	
+	if tutorial_quests and tutorial_quests.has_method("is_tutorial_active"):
+		if tutorial_quests.is_tutorial_active():
+			print("💰 Завершаем квест обучения: поговорить с Торговцем")
+			if tutorial_quests.has_method("complete_npc_quest"):
+				tutorial_quests.complete_npc_quest("trader")
+			else:
+				print("⚠️ TutorialQuests не имеет метода complete_npc_quest")
+	
 	var player = get_tree().get_first_node_in_group("players")
 	if player and player.has_method("set_can_move"):
 		player.set_can_move(false)
@@ -61,8 +75,6 @@ func start_dialog():
 	
 	print("💬 Запускаем диалог trader_greeting_timeline...")
 	
-	# Dialogic.start() ВОЗВРАЩАЕТ уже готовую ноду, которую НЕ НАДО добавлять вручную
-	# Dialogic сам управляет добавлением на сцену
 	current_dialog = Dialogic.start("trader_greeting_timeline")
 	
 	# Подписываемся на сигналы диалога

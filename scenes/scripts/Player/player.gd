@@ -15,7 +15,7 @@ enum State { IDLE, MOVE, JUMP, ATTACK }
 
 @export var move_speed: float = 250.0
 @export var gravity: float = 800.0
-@export var jump_force: float = -900.0
+@export var jump_force: float = -350.0
 @export var attack_cooldown: float = 0.5
 @export var max_health: float = 100.0
 @export var attack_damage: int = 20
@@ -288,12 +288,6 @@ func _input(event):
 		if inventory_node.visible:
 			_refresh_inventory_stats()
 	
-	if event.is_action_pressed("start_arena") and not is_on_arena and can_move:
-		print("🎮 Нажата кнопка O - запуск арены...")
-		start_arena_mode()
-		get_viewport().set_input_as_handled()
-		return
-	
 	# КНОПКИ ДЛЯ БАФФОВ СЫРА:
 	if event.is_action_pressed("damage_buff"):
 		try_activate_damage_buff()
@@ -338,7 +332,7 @@ func start_arena_mode():
 		await get_tree().create_timer(0.5).timeout
 	
 	print("🚀 Переход на арену...")
-	get_tree().change_scene_to_file("res://scenes/arena_scene.tscn")
+	TransitionManager.change_scene_with_fade("res://scenes/arena_scene.tscn")
 
 func save_without_restore():
 	if save_system and is_instance_valid(save_system):
@@ -498,13 +492,13 @@ func _auto_pick_item(item):
 		return
 	
 	if item.item_name == "Trash":
-		currency += 2000
+		currency += 15
 		
 		if currency_label:
 			currency_label.text = str(currency)
 		
 		if save_system:
-			save_system.add_currency(2000)
+			save_system.add_currency(15)
 		
 		emit_signal("currency_changed", currency)
 		_refresh_inventory_stats()
@@ -519,7 +513,7 @@ func _auto_pick_crystal(crystal):
 	if not is_instance_valid(crystal):
 		return
 	
-	PlayerInventory.add_item("Crystal", 100)
+	PlayerInventory.add_item("Crystal", 1)
 	_show_pickup_notification("Кристалл +1")
 	
 	_refresh_inventory_stats()
@@ -898,7 +892,7 @@ func return_to_main_menu():
 	print("Возврат в главное меню...")
 	save_without_restore()
 	await get_tree().create_timer(0.3).timeout
-	get_tree().change_scene_to_file("res://scenes/menu/menu.tscn")
+	TransitionManager.change_scene_with_fade("res://scenes/menu/menu.tscn")
 
 func quick_save():
 	save_without_restore()

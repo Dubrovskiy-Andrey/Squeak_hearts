@@ -280,9 +280,6 @@ func end_timeline(skip_ending := false) -> void:
 
 	timeline_ended.emit()
 
-
-## Method to check if timeline exists.
-## @timeline can be either a loaded timeline resource or a path to a timeline file.
 func timeline_exists(timeline:Variant) -> bool:
 	if typeof(timeline) in [TYPE_STRING, TYPE_STRING_NAME]:
 		if "://" in timeline and ResourceLoader.exists(timeline):

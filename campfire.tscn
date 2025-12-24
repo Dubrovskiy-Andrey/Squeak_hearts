@@ -126,8 +126,9 @@ libraries = {
 }
 
 [node name="Label" type="Label" parent="."]
-offset_left = -34.0
+offset_left = -211.0
 offset_top = -84.0
-offset_right = 36.0
+offset_right = 210.0
 offset_bottom = -61.0
-text = "нажми е"
+text = " "
+horizontal_alignment = 1

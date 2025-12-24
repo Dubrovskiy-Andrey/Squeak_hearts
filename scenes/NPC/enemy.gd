@@ -338,14 +338,7 @@ func die():
 		crystal.global_position = global_position
 		print("💎 Кристалл выпал (шанс: ", int(final_crystal_chance * 100), "%)")
 	
-	# Даём валюту игроку за убийство
-	var player = get_tree().get_first_node_in_group("players")
-	if player and is_instance_valid(player):
-		var kill_reward = 10
-		player.currency += kill_reward
-		if player.has_signal("currency_changed"):
-			player.emit_signal("currency_changed", player.currency)
-		print("💰 Награда за убийство: +", kill_reward, " Trash")
+
 	
 	# Отмечаем врага как убитого
 	if save_system and my_unique_id != "":

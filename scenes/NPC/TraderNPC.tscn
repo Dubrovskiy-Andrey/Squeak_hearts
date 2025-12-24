@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://dtncl4mb1151j"]
+[gd_scene load_steps=8 format=3 uid="uid://dtncl4mb1151j"]
 
 [ext_resource type="Texture2D" uid="uid://dmcwsrc7u4g3e" path="res://assets/NPC_Scrip.png" id="1_pfjq4"]
 [ext_resource type="Script" uid="uid://b0ak8f6r60a7n" path="res://scenes/NPC/trader_npc.gd" id="1_yp7ol"]
 [ext_resource type="PackedScene" uid="uid://1vdmgis6fw8x" path="res://scenes/NPC/trade_window.tscn" id="2_h0660"]
+[ext_resource type="FontFile" uid="uid://djo2ymmln3321" path="res://Fonts/m5x7.ttf" id="4_micpd"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yp7ol"]
 atlas = ExtResource("1_pfjq4")
@@ -39,5 +40,10 @@ position = Vector2(0, -69)
 shape = SubResource("CircleShape2D_jqsrc")
 
 [node name="Label" type="Label" parent="."]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = -52.0
+offset_top = -155.0
+offset_right = 53.0
+offset_bottom = -132.0
+theme_override_fonts/font = ExtResource("4_micpd")
+theme_override_font_sizes/font_size = 33
+horizontal_alignment = 1

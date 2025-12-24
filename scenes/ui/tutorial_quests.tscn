@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://fc6qem2hn1ul"]
+
+[ext_resource type="Script" uid="uid://x1o543t3ti4p" path="res://tutorial_quests.gd" id="1_drqpr"]
+
+[node name="TutorialQuests" type="CanvasLayer"]
+script = ExtResource("1_drqpr")

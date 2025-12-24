@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://xk1edn7b6hr3" path="res://assets/HP/Sprite-0002 (1).png" id="5_fd3ck"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_2stup"]
-radius = 106.0
+radius = 69.260376
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_eqgjy"]
 atlas = ExtResource("2_jnrr6")
@@ -150,7 +150,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"Attack",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -179,7 +179,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"Death",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -193,7 +193,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"Hurt",
-"speed": 5.0
+"speed": 8.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -210,7 +210,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"Idle",
-"speed": 5.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -233,7 +233,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"Run",
-"speed": 5.0
+"speed": 9.0
 }]
 
 [sub_resource type="Animation" id="Animation_qpnbb"]
@@ -383,7 +383,7 @@ _data = {
 }
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_ve8gy"]
-radius = 91.00549
+radius = 80.00625
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_84wwh"]
 radius = 52.03845
@@ -393,22 +393,23 @@ radius = 165.01212
 
 [node name="Enemy_Ranged" type="CharacterBody2D"]
 collision_layer = 16
-collision_mask = 5
 script = ExtResource("1_a0s14")
 projectile_scene = ExtResource("2_eqgjy")
 item_drop_scene = ExtResource("3_fd3ck")
 crystal_drop_scene = ExtResource("4_2stup")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(-3, -105)
+position = Vector2(-1, -69)
 shape = SubResource("CircleShape2D_2stup")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(1, -102.00001)
 scale = Vector2(4.894445, 4.894444)
 sprite_frames = SubResource("SpriteFrames_x3b2u")
-animation = &"Attack"
+animation = &"Run"
 autoplay = "Idle"
+frame = 5
+frame_progress = 0.5818668
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
@@ -420,7 +421,7 @@ collision_layer = 16
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitBox"]
-position = Vector2(-12, -89)
+position = Vector2(-26, -74)
 shape = SubResource("CircleShape2D_ve8gy")
 
 [node name="AttackRange" type="Area2D" parent="."]
@@ -435,7 +436,7 @@ shape = SubResource("CircleShape2D_84wwh")
 collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetectionArea"]
-position = Vector2(2, -131)
+position = Vector2(-5, -110)
 shape = SubResource("CircleShape2D_7a8ib")
 
 [node name="HealthBar" type="TextureProgressBar" parent="."]
@@ -456,5 +457,6 @@ texture_progress = ExtResource("5_fd3ck")
 tint_progress = Color(1, 0, 0, 1)
 
 [node name="ShootPoint" type="Marker2D" parent="."]
+position = Vector2(-2, -83)
 
 [node name="ProjectileSpawner" type="Node" parent="."]

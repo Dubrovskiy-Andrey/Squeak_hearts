@@ -68,20 +68,19 @@ position = Vector2(5, -76)
 shape = SubResource("CapsuleShape2D_gl0bj")
 
 [node name="Label" type="Label" parent="."]
-visible = false
 anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -47.0
-offset_top = -166.0
-offset_right = 59.0
-offset_bottom = -152.0
+offset_left = -52.0
+offset_top = -168.0
+offset_right = 53.999992
+offset_bottom = -141.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_fonts/font = ExtResource("3_h283k")
 theme_override_font_sizes/font_size = 33
-text = "Interact(e)"
+horizontal_alignment = 1
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="body_exited" from="." to="." method="_on_body_exited"]

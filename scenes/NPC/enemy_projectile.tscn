@@ -1,10 +1,10 @@
 [gd_scene load_steps=6 format=3 uid="uid://b0omhm35mp6cm"]
 
-[ext_resource type="Script" uid="uid://qo8frd08xxyu" path="res://enemy_projectile.gd" id="1_lujnj"]
+[ext_resource type="Script" path="res://enemy_projectile.gd" id="1_lujnj"]
 [ext_resource type="Texture2D" uid="uid://byjgik78ul4jq" path="res://assets/dialog_dot.png" id="2_ucf5a"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_bcy86"]
-radius = 46.09772
+radius = 22.561028
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3x35j"]
 atlas = ExtResource("2_ucf5a")
@@ -32,6 +32,8 @@ script = ExtResource("1_lujnj")
 shape = SubResource("CircleShape2D_bcy86")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+position = Vector2(1.0000019, 3.000002)
+scale = Vector2(0.5546875, 0.5546875)
 sprite_frames = SubResource("SpriteFrames_6ek6h")
 
 [node name="Timer" type="Timer" parent="."]

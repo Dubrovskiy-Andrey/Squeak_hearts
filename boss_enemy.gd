@@ -5,16 +5,16 @@ enum State { IDLE, CHASE, ATTACK, HURT, DEATH }
 @export var max_health: float = 250.0
 @export var move_speed: float = 150.0
 @export var attack_damage: float = 25.0
-@export var attack_range: float = 40.0
+@export var attack_range: float = 80.0  # Увеличил атаку босса
 @export var detection_range: float = 2300.0
-@export var player_detection_range: float = 200.0
-@export var attack_cooldown: float = 1.0
+@export var player_detection_range: float = 300.0  # Увеличил зону обнаружения игрока
+@export var attack_cooldown: float = 1.5  # Немного больше кд для баланса
 @export var gravity: float = 800.0
 @export var health_bar_path: NodePath = "HealthBar"
 @export var item_drop_scene: PackedScene
-@export var item_drop_chance: float = 0.2  # 20% шанс выпадения обычного лута
+@export var item_drop_chance: float = 0.3  # 30% для босса
 @export var crystal_drop_scene: PackedScene
-@export var crystal_drop_chance: float = 0.25  # 25% шанс выпадения кристалла
+@export var crystal_drop_chance: float = 0.4  # 40% для босса
 @export var enemy_id: String = "boss_enemy_"
 
 var current_health: float
@@ -36,51 +36,67 @@ var is_dying: bool = false
 @onready var hit_box: Area2D = $HitBox
 @onready var health_bar: TextureProgressBar = null
 @onready var player_detection_area: Area2D = $PlayerDetectionArea
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var save_system = get_node_or_null("/root/save_system")
 
 func _ready():
-	current_health = max_health
-	# Увеличиваем размер спрайта
-	if $AnimatedSprite2D:
-		$AnimatedSprite2D.scale *= 1.5
+	print("👑 БОСС создан! HP:", max_health)
 	
-	print("👑 БОСС создан! HP:", current_health)
-	add_to_group("boss")
+	# Генерируем уникальный ID
 	my_unique_id = enemy_id + "_" + str(int(global_position.x)) + "_" + str(int(global_position.y)) + "_" + str(Time.get_ticks_msec())
 	
 	# Проверяем, не убит ли уже враг
 	if save_system and save_system.is_enemy_killed(my_unique_id):
-		print("Враг уже убит, удаляем: ", my_unique_id)
+		print("👑 Босс уже убит, удаляем: ", my_unique_id)
 		queue_free()
 		return
 	
 	current_health = max_health
+	
+
+	
+	# Настраиваем health bar
 	if health_bar_path and has_node(health_bar_path):
 		health_bar = get_node(health_bar_path)
 		health_bar.max_value = max_health
 		health_bar.value = current_health
 	
+	# Добавляем в группы
+	add_to_group("enemies")  # Важно для WaveManager!
+	add_to_group("boss")
+	
+	# Увеличиваем параметры для босса
+	max_health *= 2.0  # В 2 раза больше HP
+	attack_damage *= 1.5  # В 1.5 раза больше урона
+	current_health = max_health
+	attack_range = 100.0  # Большая зона атаки
+	player_detection_range = 350.0  # Большая зона обнаружения
 	
 	# Находим цели
 	call_deferred("_find_initial_targets")
 	
 	# Подключаем сигналы
-	attack_range_area.body_entered.connect(Callable(self, "_on_attack_range_body_entered"))
-	attack_range_area.body_exited.connect(Callable(self, "_on_attack_range_body_exited"))
-	hit_box.area_entered.connect(Callable(self, "_on_hit_box_area_entered"))
+	attack_range_area.body_entered.connect(_on_attack_range_body_entered)
+	attack_range_area.body_exited.connect(_on_attack_range_body_exited)
+	hit_box.area_entered.connect(_on_hit_box_area_entered)
 	
 	if player_detection_area:
-		player_detection_area.body_entered.connect(Callable(self, "_on_player_detection_area_body_entered"))
-		player_detection_area.body_exited.connect(Callable(self, "_on_player_detection_area_body_exited"))
+		player_detection_area.body_entered.connect(_on_player_detection_area_body_entered)
+		player_detection_area.body_exited.connect(_on_player_detection_area_body_exited)
 	
 	play_random_idle()
+	
+	print("👑 ГИГАНТСКИЙ БОСС создан!")
+	print("  HP:", max_health)
+	print("  Урон:", attack_damage)
+	print("  Масштаб:", sprite.scale if sprite else "нет спрайта")
 
 func _find_initial_targets():
 	# Ищем цели по группам
 	player = get_tree().get_first_node_in_group("players")
 	cheese = get_tree().get_first_node_in_group("great_cheese")
 	
-	print("🔍 Враг ищет начальные цели:")
+	print("🔍 Босс ищет начальные цели:")
 	print("   Игрок (players):", player != null)
 	print("   Сыр (great_cheese):", cheese != null)
 	
@@ -95,6 +111,7 @@ func _find_initial_targets():
 		print("🎯 Первоначальная цель: Игрок (сыр не найден)")
 	else:
 		print("⚠️ Ничего не найдено!")
+		state = State.IDLE
 
 func scale_stats(hp_multiplier: float, damage_multiplier: float):
 	max_health *= hp_multiplier
@@ -105,12 +122,13 @@ func scale_stats(hp_multiplier: float, damage_multiplier: float):
 		health_bar.max_value = max_health
 		health_bar.value = current_health
 	
-	print("📊 Враг усилен: HP=", max_health, " DMG=", attack_damage)
+	print("👑 Босс усилен: HP=", max_health, " DMG=", attack_damage)
 
 func _physics_process(delta):
 	if state == State.DEATH or is_dying:
 		return
 
+	# Применяем гравитацию
 	if not is_on_floor():
 		velocity.y += gravity * delta
 	else:
@@ -144,7 +162,7 @@ func _physics_process(delta):
 	if not is_distracted_by_player and player and is_instance_valid(player):
 		var distance_to_player = global_position.distance_to(player.global_position)
 		if distance_to_player <= player_detection_range:
-			print("🎯 Игрок рядом! Отвлекаюсь на него")
+			print("🎯 Босс: Игрок рядом! Отвлекаюсь на него")
 			target = player
 			is_distracted_by_player = true
 			distraction_cooldown = 10.0
@@ -173,7 +191,7 @@ func _physics_process(delta):
 
 func _return_to_original_target():
 	if original_target and is_instance_valid(original_target):
-		print("🎯 Возвращаюсь к оригинальной цели:", original_target.name)
+		print("🎯 Босс: Возвращаюсь к оригинальной цели:", original_target.name)
 		target = original_target
 		is_distracted_by_player = false
 		distraction_cooldown = 0
@@ -194,15 +212,15 @@ func _update_target():
 		if original_target and not is_instance_valid(original_target):
 			# Если сыр уничтожен, атакуем игрока
 			if original_target == cheese and player and is_instance_valid(player):
-				print("🧀 Сыр уничтожен, переключаюсь на игрока")
+				print("🧀 Босс: Сыр уничтожен, переключаюсь на игрока")
 				original_target = player
 				target = player
 			elif original_target == player and cheese and is_instance_valid(cheese):
-				print("💀 Игрок умер, переключаюсь на сыр")
+				print("💀 Босс: Игрок умер, переключаюсь на сыр")
 				original_target = cheese
 				target = cheese
 			else:
-				print("⚠️ Нет целей!")
+				print("⚠️ Босс: Нет целей!")
 				target = null
 
 func state_chase(delta):
@@ -249,7 +267,7 @@ func apply_attack_damage_to_target():
 	if not target or not is_instance_valid(target):
 		return
 	
-	print("⚔️ Враг атакует:", target.name)
+	print("👑 Босс атакует:", target.name)
 	
 	if target.is_in_group("great_cheese") and target.has_method("take_damage"):
 		target.take_damage(attack_damage)
@@ -257,14 +275,22 @@ func apply_attack_damage_to_target():
 		target.take_damage(attack_damage)
 
 func target_in_attack_range() -> bool:
-	return target and is_instance_valid(target) and global_position.distance_to(target.global_position) <= attack_range
+	if not target or not is_instance_valid(target):
+		return false
+	return global_position.distance_to(target.global_position) <= attack_range
 
 func _on_hit_box_area_entered(area):
-	if area.is_in_group("player_attack"):
+	print("👑 Босс получает удар от:", area.name)
+	
+	# Проверяем что это атака игрока
+	if area.is_in_group("player_attack") or area.is_in_group("player_hitbox"):
 		var dmg = 20.0
 		if area.has_meta("damage"):
 			dmg = float(area.get_meta("damage"))
+		print("👑 Босс получает урон:", dmg)
 		take_damage(dmg)
+	elif area.is_in_group("enemy_attack"):
+		print("👑 Босс получает удар от другого врага (игнорируем)")
 
 func take_damage(amount: float):
 	if state == State.DEATH or is_dying:
@@ -272,6 +298,7 @@ func take_damage(amount: float):
 	
 	current_health -= amount
 	current_health = max(current_health, 0)
+	print("👑 Босс HP: ", current_health, "/", max_health)
 
 	if health_bar:
 		health_bar.value = current_health
@@ -295,6 +322,8 @@ func die():
 	state = State.DEATH
 	velocity = Vector2.ZERO
 	
+	print("👑 Босс умирает!")
+	
 	# Отключаем коллизии
 	set_collision_layer(0)
 	set_collision_mask(0)
@@ -302,33 +331,35 @@ func die():
 	anim_player.play("Death")
 	await anim_player.animation_finished
 
-	# Шанс выпадения обычного лута (мусора) - 20%
+	# Шанс выпадения обычного лута (мусора) - 30% для босса
 	if item_drop_scene and randf() <= item_drop_chance:
 		var item = item_drop_scene.instantiate()
 		if item.has_method("set_enemy_id"):
 			item.set_enemy_id(my_unique_id)
 		get_parent().add_child(item)
 		item.global_position = global_position
-		print("📦 Обычный лут выпал (шанс: ", item_drop_chance * 100, "%)")
+		print("👑 Босс: Лут выпал!")
 	
-	# Шанс выпадения кристалла - 25%
+	# Шанс выпадения кристалла - 40% для босса
 	if crystal_drop_scene and randf() <= crystal_drop_chance:
 		var crystal = crystal_drop_scene.instantiate()
 		if crystal.has_method("set_enemy_id"):
 			crystal.set_enemy_id(my_unique_id)
 		get_parent().add_child(crystal)
 		crystal.global_position = global_position
-		print("💎 Кристалл выпал (шанс: ", crystal_drop_chance * 100, "%)")
+		print("👑 Босс: Кристалл выпал!")
 
 	# Отмечаем врага как убитого
 	if save_system and my_unique_id != "":
 		save_system.mark_enemy_killed(my_unique_id)
 	
-	# Удаляем врага
-	queue_free()
-	
 	# Эмитируем сигнал смерти для WaveManager
 	get_tree().call_group("wave_manager", "_on_enemy_died")
+	
+	print("👑 Босс побежден!")
+	
+	# Удаляем врага
+	queue_free()
 
 func play_random_idle():
 	var idle_animations = ["Idle", "Idle2"]
@@ -338,23 +369,25 @@ func play_random_idle():
 func _on_attack_range_body_entered(body):
 	if (body.is_in_group("great_cheese") or body.is_in_group("players")) and target == body:
 		state = State.ATTACK
+		print("👑 Босс: Цель вошла в зону атаки")
 
 func _on_attack_range_body_exited(body):
 	if (body.is_in_group("great_cheese") or body.is_in_group("players")) and state != State.HURT:
 		state = State.CHASE
+		print("👑 Босс: Цель вышла из зоны атаки")
 
 func _on_player_detection_area_body_entered(body):
 	if body.is_in_group("players"):
-		print("🎯 Обнаружен игрок в зоне!")
+		print("👑 Босс: Обнаружен игрок в зоне!")
 		if not is_distracted_by_player:
-			print("🎯 Отвлекаюсь на игрока!")
+			print("👑 Босс: Отвлекаюсь на игрока!")
 			target = body
 			is_distracted_by_player = true
 			distraction_cooldown = 10.0
 
 func _on_player_detection_area_body_exited(body):
 	if body.is_in_group("players") and is_distracted_by_player:
-		print("🎯 Игрок вышел из зоны обнаружения")
+		print("👑 Босс: Игрок вышел из зоны обнаружения")
 		distraction_cooldown = 3.0
 
 func stop_moving():

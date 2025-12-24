@@ -4,6 +4,7 @@ extends Node2D
 @onready var great_cheese = $GreateCheese
 @onready var tilemap = $TileMap
 @onready var spawn_marker = $PlayerSpawn  # Маркер спавна игрока
+@onready var arena_result = $ArenaResult  # ДОБАВЛЕНО: ссылка на результат
 
 # UI элементы
 @onready var wave_label: Label = $UI/Control/WaveLabel
@@ -21,6 +22,7 @@ func _ready():
 	print("🏟️ Арена загружена с TileMap!")
 	print("🔍 Проверяю сыр:", great_cheese)
 	print("📍 Проверяю маркер спавна:", spawn_marker)
+	print("🎯 Проверяю ArenaResult:", arena_result)
 	
 	# Отладочная информация о маркере
 	if spawn_marker:
@@ -261,29 +263,59 @@ func _show_game_over_message(reason: String):
 	else:
 		message_text = "💀 ВАС УБИЛИ! 💀"
 	
+	# Создаем CanvasLayer для уведомления
+	var canvas_layer = CanvasLayer.new()
+	canvas_layer.layer = 99  # Чуть ниже окна результатов (100)
+	add_child(canvas_layer)
+	
+	# Создаем Control на весь экран
+	var container = Control.new()
+	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.set_offsets_preset(Control.PRESET_FULL_RECT)
+	canvas_layer.add_child(container)
+	
+	# Создаем сообщение
 	var message = Label.new()
 	message.text = message_text
-	message.add_theme_font_size_override("font_size", 48)
+	message.add_theme_font_size_override("font_size", 64)
 	
 	if reason == "Сыр уничтожен!":
 		message.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+		message.add_theme_constant_override("outline_size", 8)
+		message.add_theme_color_override("font_outline_color", Color.BLACK)
 	else:
 		message.add_theme_color_override("font_color", Color(1, 0, 0))
+		message.add_theme_constant_override("outline_size", 8)
+		message.add_theme_color_override("font_outline_color", Color.BLACK)
 	
-	# Позиционируем по центру экрана
-	var viewport_size = get_viewport().get_visible_rect().size
-	message.position = Vector2(viewport_size.x / 2 - 150, viewport_size.y / 2 - 50)
+	# Центрируем, но смещаем ВЫШЕ и ЛЕВЕЕ
+	message.set_anchors_preset(Control.PRESET_CENTER)
+	container.add_child(message)
 	
-	add_child(message)
+	# Смещаем положение: X - левее, Y - выше
+	var offset_x = -300  # Левее на 150 пикселей
+	var offset_y = -100  # Выше на 100 пикселей
+	message.position += Vector2(offset_x, offset_y)
 	
+	# Анимация
 	var tween = create_tween()
+	tween.set_parallel(true)
 	tween.tween_property(message, "scale", Vector2(1.5, 1.5), 0.5)
 	tween.tween_property(message, "scale", Vector2(1.0, 1.0), 0.5)
-	tween.tween_property(message, "modulate:a", 0, 1.0)
+	tween.tween_property(message, "modulate:a", 0, 2.0)  # Медленнее исчезает
 	
-	await get_tree().create_timer(2.0).timeout
-	if is_instance_valid(message):
-		message.queue_free()
+	# Дополнительная анимация - покачивание
+	var shake_tween = create_tween()
+	shake_tween.tween_property(message, "position:x", message.position.x + 10, 0.1)
+	shake_tween.tween_property(message, "position:x", message.position.x - 10, 0.1)
+	shake_tween.tween_property(message, "position:x", message.position.x, 0.1)
+	shake_tween.set_loops(3)
+	
+	await tween.finished
+	
+	# Удаляем
+	if is_instance_valid(canvas_layer):
+		canvas_layer.queue_free()
 
 func _stop_all_enemies():
 	print("⏹️ Останавливаю всех врагов...")
@@ -312,23 +344,8 @@ func _stop_all_enemies():
 func _show_results_screen():
 	print("📊 Показываю экран результатов...")
 	
-	var results_scene = load("res://scenes/arena_result.tscn")
-	if results_scene:
-		print("✅ Сцена результатов загружена")
-		
-		var results = results_scene.instantiate()
-		print("✅ Экземпляр создан")
-		
-		# Находим позицию камеры
-		var camera_position = _get_camera_center_position()
-		print("📊 Центр камеры для позиционирования:", camera_position)
-		
-		# Добавляем на сцену ПЕРЕД вызовом методов
-		add_child(results)
-		print("✅ Окно добавлено на сцену")
-		
-		# Ждем один кадр чтобы окно полностью инициализировалось
-		await get_tree().process_frame
+	if arena_result:
+		print("✅ ArenaResult найден на сцене")
 		
 		# Получаем данные волны
 		var wave_num = 0
@@ -336,23 +353,16 @@ func _show_results_screen():
 			wave_num = wave_manager.get_current_wave()
 			print("📊 Волна для отображения:", wave_num)
 		
-		# Вызываем методы окна результатов
-		if results.has_method("position_at_camera"):
-			print("✅ Вызываю position_at_camera()")
-			results.position_at_camera(camera_position)
-		
 		# Определяем победа или поражение
-		var is_victory = false  # По умолчанию поражение (игрок умер или сыр уничтожен)
+		var is_victory = false
+		if player and player.has_method("is_alive"):
+			is_victory = player.is_alive() and great_cheese and great_cheese.current_health > 0
 		
-		# Вызываем display_results
-		if results.has_method("display_results"):
+		# Вызываем метод отображения результатов
+		if arena_result.has_method("display_results"):
 			print("✅ Вызываю display_results()")
-			# Ждем еще немного чтобы позиционирование завершилось
-			await get_tree().create_timer(0.05).timeout
-			results.display_results(survival_time, wave_num, is_victory, camera_position)
+			arena_result.display_results(survival_time, wave_num, is_victory)
 			print("✅ display_results() вызван")
-		else:
-			print("❌ Окно не имеет метода display_results()")
 		
 		# Скрываем UI арены
 		var ui = get_node_or_null("UI")
@@ -362,23 +372,7 @@ func _show_results_screen():
 		
 		print("✅ Всё готово, окно должно быть видно!")
 	else:
-		print("❌ Сцена результатов не найдена")
-
-func _get_camera_center_position() -> Vector2:
-	# Ищем камеру игрока
-	if player:
-		print("🎥 Ищу камеру у игрока:", player.name)
-		var camera = player.get_node_or_null("Camera2D")
-		if camera:
-			print("🎥 Камера найдена, позиция:", camera.global_position)
-			return camera.global_position
-		else:
-			print("🎥 Камера не найдена, использую позицию игрока:", player.global_position)
-			return player.global_position
-	
-	# Если нет игрока, используем центр экрана
-	print("🎥 Игрок не найден, использую центр по умолчанию")
-	return Vector2(400, 300)
+		print("❌ ArenaResult не найден на сцене!")
 
 func _on_wave_started(wave_num: int):
 	if wave_label:
