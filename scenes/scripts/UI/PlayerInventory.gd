@@ -189,7 +189,6 @@ func clear_talisman_inventory():
 
 func reset_for_new_game():
 	inventory = {
-		0: ["Key", 1]
 	}
 	
 	talisman_inventory = {

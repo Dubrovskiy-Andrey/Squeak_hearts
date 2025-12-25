@@ -22,40 +22,40 @@ signal boss_spawned(boss_enemy)
 # Конфигурация волн для разных сложностей
 var wave_configs = {
 	"kitten": [  # 8 волн для "Котёнка"
-		{"delay": 3.0, "enemies": [{"type": "BasicCat", "count": 3}], "name": "Волна 1", "reward": {"trash": 100}},
-		{"delay": 2.5, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 120}},
-		{"delay": 2.0, "enemies": [{"type": "BasicCat", "count": 3}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 140}},
-		{"delay": 1.8, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 2}], "name": "Волна 4", "reward": {"trash": 160}},
-		{"delay": 1.6, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 180}},
-		{"delay": 1.4, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 3}], "name": "Волна 6", "reward": {"trash": 200}},
-		{"delay": 1.2, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 220}},
-		{"delay": 1.0, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 500, "crystals": 3}}
+		{"delay": 3.0, "enemies": [{"type": "BasicCat", "count": 3}], "name": "Волна 1", "reward": {"trash": 50}},
+		{"delay": 2.5, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 60}},
+		{"delay": 2.0, "enemies": [{"type": "BasicCat", "count": 3}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 70}},
+		{"delay": 1.8, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 2}], "name": "Волна 4", "reward": {"trash": 80}},
+		{"delay": 1.6, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 90}},
+		{"delay": 1.4, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 3}], "name": "Волна 6", "reward": {"trash": 100}},
+		{"delay": 1.2, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 100}},
+		{"delay": 1.0, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 250, "crystals": 2}}
 	],
 	"cat": [  # 10 волн для "Кота"
-		{"delay": 2.8, "enemies": [{"type": "BasicCat", "count": 3}, {"type": "ArcherCat", "count": 1}], "name": "Волна 1", "reward": {"trash": 110}},
-		{"delay": 2.3, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 130}},
-		{"delay": 1.8, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 150}},
-		{"delay": 1.6, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 3}], "name": "Волна 4", "reward": {"trash": 170}},
-		{"delay": 1.4, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 190}},
-		{"delay": 1.2, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 4}], "name": "Волна 6", "reward": {"trash": 210}},
-		{"delay": 1.0, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 230}},
-		{"delay": 0.9, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 5}], "name": "Волна 8", "reward": {"trash": 250}},
-		{"delay": 0.8, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 5}], "name": "Волна 9", "reward": {"trash": 270}},
-		{"delay": 0.7, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 600, "crystals": 5}}
+		{"delay": 2.8, "enemies": [{"type": "BasicCat", "count": 3}, {"type": "ArcherCat", "count": 1}], "name": "Волна 1", "reward": {"trash": 50}},
+		{"delay": 2.3, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 60}},
+		{"delay": 1.8, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 70}},
+		{"delay": 1.6, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 3}], "name": "Волна 4", "reward": {"trash": 80}},
+		{"delay": 1.4, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 90}},
+		{"delay": 1.2, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 4}], "name": "Волна 6", "reward": {"trash": 100}},
+		{"delay": 1.0, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 100}},
+		{"delay": 0.9, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 5}], "name": "Волна 8", "reward": {"trash": 100}},
+		{"delay": 0.8, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 5}], "name": "Волна 9", "reward": {"trash": 120}},
+		{"delay": 0.7, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 300, "crystals": 3}}
 	],
 	"scary": [  # 12 волн для "Страшного"
-		{"delay": 2.5, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 1", "reward": {"trash": 120}},
-		{"delay": 2.0, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 140}},
-		{"delay": 1.7, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 160}},
-		{"delay": 1.5, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 3}], "name": "Волна 4", "reward": {"trash": 180}},
-		{"delay": 1.3, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 200}},
-		{"delay": 1.1, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 4}], "name": "Волна 6", "reward": {"trash": 220}},
-		{"delay": 1.0, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 240}},
-		{"delay": 0.9, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 5}], "name": "Волна 8", "reward": {"trash": 260}},
-		{"delay": 0.8, "enemies": [{"type": "BasicCat", "count": 9}, {"type": "ArcherCat", "count": 5}], "name": "Волна 9", "reward": {"trash": 280}},
-		{"delay": 0.7, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 6}], "name": "Волна 10", "reward": {"trash": 300}},
-		{"delay": 0.6, "enemies": [{"type": "BasicCat", "count": 10}, {"type": "ArcherCat", "count": 6}], "name": "Волна 11", "reward": {"trash": 320}},
-		{"delay": 0.5, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 700, "crystals": 8}}
+		{"delay": 2.5, "enemies": [{"type": "BasicCat", "count": 4}, {"type": "ArcherCat", "count": 1}], "name": "Волна 1", "reward": {"trash": 50}},
+		{"delay": 2.0, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 1}], "name": "Волна 2", "reward": {"trash": 60}},
+		{"delay": 1.7, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 2}], "name": "Волна 3", "reward": {"trash": 70}},
+		{"delay": 1.5, "enemies": [{"type": "BasicCat", "count": 5}, {"type": "ArcherCat", "count": 3}], "name": "Волна 4", "reward": {"trash": 80}},
+		{"delay": 1.3, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 3}], "name": "Волна 5", "reward": {"trash": 90}},
+		{"delay": 1.1, "enemies": [{"type": "BasicCat", "count": 6}, {"type": "ArcherCat", "count": 4}], "name": "Волна 6", "reward": {"trash": 100}},
+		{"delay": 1.0, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 4}], "name": "Волна 7", "reward": {"trash": 100}},
+		{"delay": 0.9, "enemies": [{"type": "BasicCat", "count": 7}, {"type": "ArcherCat", "count": 5}], "name": "Волна 8", "reward": {"trash": 100}},
+		{"delay": 0.8, "enemies": [{"type": "BasicCat", "count": 9}, {"type": "ArcherCat", "count": 5}], "name": "Волна 9", "reward": {"trash": 100}},
+		{"delay": 0.7, "enemies": [{"type": "BasicCat", "count": 8}, {"type": "ArcherCat", "count": 6}], "name": "Волна 10", "reward": {"trash": 120}},
+		{"delay": 0.6, "enemies": [{"type": "BasicCat", "count": 10}, {"type": "ArcherCat", "count": 6}], "name": "Волна 11", "reward": {"trash": 120}},
+		{"delay": 0.5, "enemies": [{"type": "BossCat", "count": 1}], "name": "ФИНАЛЬНЫЙ БОСС", "reward": {"trash": 300, "crystals": 5}}
 	]
 }
 

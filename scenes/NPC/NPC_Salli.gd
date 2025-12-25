@@ -17,9 +17,9 @@ var upgrades_data = {
 		"name": "Улучшение персонажа",
 		"max_level": 3,
 		"costs": [
-			{"trash": 100, "crystals": 1, "hp_bonus": 20, "damage_bonus": 5},
-			{"trash": 150, "crystals": 2, "hp_bonus": 25, "damage_bonus": 7},
-			{"trash": 200, "crystals": 3, "hp_bonus": 30, "damage_bonus": 10}
+			{"trash": 150, "crystals": 1, "hp_bonus": 20, "damage_bonus": 5},
+			{"trash": 270, "crystals": 2, "hp_bonus": 25, "damage_bonus": 7},
+			{"trash": 500, "crystals": 3, "hp_bonus": 40, "damage_bonus": 10}
 		],
 		"description": "Увеличивает HP и урон персонажа"
 	},
@@ -27,7 +27,7 @@ var upgrades_data = {
 		"name": "Дополнительный сыр",
 		"max_level": 1,
 		"costs": [
-			{"crystals": 10, "extra_cheese": 1}
+			{"crystals": 5, "extra_cheese": 1}
 		],
 		"description": "Добавляет +1 слот для сыра"
 	},
@@ -35,9 +35,9 @@ var upgrades_data = {
 		"name": "Удача охотника",
 		"max_level": 3,
 		"costs": [
-			{"crystals": 5, "drop_bonus": 0.05},
-			{"crystals": 8, "drop_bonus": 0.10},
-			{"crystals": 12, "drop_bonus": 0.20}
+			{"crystals": 2, "drop_bonus": 0.05},
+			{"crystals": 4, "drop_bonus": 0.10},
+			{"crystals": 6, "drop_bonus": 0.20}
 		],
 		"description": "Увеличивает шанс выпадения кристаллов на +20%"
 	},
@@ -45,9 +45,9 @@ var upgrades_data = {
 		"name": "Усиление сыра",
 		"max_level": 3,
 		"costs": [
-			{"crystals": 2, "cheese_hp_bonus": 200},
-			{"crystals": 4, "cheese_hp_bonus": 300},
-			{"crystals": 6, "cheese_hp_bonus": 400}
+			{"crystals": 2, "cheese_hp_bonus": 100},
+			{"crystals": 4, "cheese_hp_bonus": 170},
+			{"crystals": 6, "cheese_hp_bonus": 250}
 		],
 		"description": "Увеличивает максимальное HP сыра на арене"
 	}

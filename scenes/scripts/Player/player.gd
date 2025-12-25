@@ -921,7 +921,6 @@ func try_activate_damage_buff():
 		if consume_multiple_cheese(2):
 			activate_damage_buff()
 	else:
-		print("❌ Нужно 2 полных сыра для баффа урона!")
 		show_buff_notification("❌ НУЖНО 2 СЫРА", Color(1, 0.3, 0.3))
 
 func try_activate_speed_buff():
@@ -930,7 +929,6 @@ func try_activate_speed_buff():
 		if consume_cheese():
 			activate_speed_buff()
 	else:
-		print("❌ Нужен 1 полный сыр для баффа скорости!")
 		show_buff_notification("❌ НУЖЕН 1 СЫР", Color(1, 0.3, 0.3))
 
 func try_activate_heal_buff():
@@ -940,7 +938,6 @@ func try_activate_heal_buff():
 			heal_to_full()
 			show_buff_notification("❤️ ПОЛНОЕ ИСЦЕЛЕНИЕ!", Color(0.2, 1, 0.2))
 	else:
-		print("❌ Нужно 3 полных сыра для исцеления!")
 		show_buff_notification("❌ НУЖНО 3 СЫРА", Color(1, 0.3, 0.3))
 
 func consume_multiple_cheese(amount: int) -> bool:

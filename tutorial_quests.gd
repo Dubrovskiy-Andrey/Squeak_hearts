@@ -19,7 +19,7 @@ var tutorial_quests = [
 	},
 	{
 		"id": "attack",
-		"text": "Атакуй воздух: [ЛКМ] или [ПРОБЕЛ]",
+		"text": "Атакуй воздух: [ЛКМ]",
 		"required_count": 3,
 		"current_count": 0,
 		"done": false,
@@ -41,7 +41,7 @@ var tutorial_quests = [
 	},
 	{
 		"id": "talk_trader",
-		"text": "Поговори с Торговцем",
+		"text": "Поговори с Scrip (подойди и нажми Е)",
 		"npc_name": "trader",
 		"done": false,
 		"type": "npc"
@@ -89,6 +89,15 @@ func _ready():
 		if need_tutorial and not tutorial_skipped and not tutorial_completed:
 			print("🎮 TutorialQuests: обучение требуется")
 			
+			# Проверяем, все ли квесты уже выполнены
+			var all_quests_completed = _check_if_all_quests_completed()
+			
+			if all_quests_completed:
+				# Все квесты уже выполнены - завершаем обучение
+				print("✅ Все квесты уже выполнены, завершаем обучение")
+				_complete_tutorial_silently()
+				return
+			
 			# Ждем немного, чтобы все загрузилось
 			await get_tree().create_timer(0.5).timeout
 			
@@ -120,9 +129,45 @@ func _ready():
 	
 	print("✅ TutorialQuests инициализирован")
 
+func _check_if_all_quests_completed() -> bool:
+	"""Проверяет, все ли квесты уже выполнены"""
+	for quest in tutorial_quests:
+		if not quest["done"]:
+			return false
+	return true
+
+func _complete_tutorial_silently():
+	"""Тихо завершает обучение без показа UI"""
+	print("🔕 Тихий финиш обучения")
+	
+	is_active = false
+	
+	var save_sys = get_node_or_null("/root/save_system")
+	if save_sys:
+		save_sys.set_tutorial_completed(true)
+		save_sys.set_need_tutorial(false)
+		print("💾 Обучение тихо завершено в save_system")
+	
+	# Не показываем UI, не даем награду, просто завершаем
+	visible = false
+	set_process(false)
+	
+	# Даем игроку возможность двигаться
+	player = get_tree().get_first_node_in_group("players")
+	if player and player.has_method("set_can_move"):
+		player.set_can_move(true)
+
 func restore_from_save():
 	"""Восстанавливает UI после загрузки сохранения"""
 	print("🔄 TutorialQuests: восстановление из сохранения")
+	
+	# Проверяем, все ли квесты уже выполнены
+	var all_quests_completed = _check_if_all_quests_completed()
+	
+	if all_quests_completed:
+		print("✅ Все квесты уже выполнены, не показываем UI")
+		_complete_tutorial_silently()
+		return
 	
 	# Восстанавливаем игрока
 	player = get_tree().get_first_node_in_group("players")
@@ -281,6 +326,7 @@ func show_lore():
 • [color=yellow]Прокачиваться[/color] у Salli
 • [color=yellow]Покупать снаряжение[/color] у Торговца  
 • [color=yellow]Тренироваться[/color] на Арене
+• [color=yellow]Открыть инвентарь - [I][/color] 
 
 Твои способности:
 • [color=red][F] - Ярость: увеличивает урон[/color]

@@ -83,10 +83,10 @@ func setup(player_data: Dictionary):
 func _load_npc_items_from_save():
 	# Стандартные товары если сохранения нет
 	var default_items = [
-		{"name": "RingOfHealth", "price": 100, "currency": "Trash", "icon": "RingOfHealth"},
-		{"name": "RingOfDamage", "price": 150, "currency": "Trash", "icon": "RingOfDamage"},
+		{"name": "RingOfHealth", "price": 300, "currency": "Trash", "icon": "RingOfHealth"},
+		{"name": "RingOfDamage", "price": 450, "currency": "Trash", "icon": "RingOfDamage"},
 		{"name": "RingOfBalance", "price": 3, "currency": "Crystal", "icon": "RingOfBalance"},
-		{"name": "RingOfSpeed", "price": 200, "currency": "Trash", "icon": "RingOfSpeed"},
+		{"name": "RingOfSpeed", "price": 600, "currency": "Trash", "icon": "RingOfSpeed"},
 		{"name": "RingOfSwiftStrike", "price": 5, "currency": "Crystal", "icon": "RingOfSwiftStrike"}
 	]
 	

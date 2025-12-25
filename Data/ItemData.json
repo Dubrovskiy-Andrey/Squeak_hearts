@@ -72,8 +72,8 @@
 	"ItemCategory": "Talisman",
 	"StackSize": 1,
 	"Stats": {
-	  "HPBonus": 25,
-	  "DamageBonus": 5,
+	  "HPBonus": 30,
+	  "DamageBonus": 7,
 	  "SpeedBonus": 0
 	},
 	"Description": "Кольцо баланса. Увеличивает здоровье на 25 и урон на 5."
@@ -95,7 +95,7 @@
 	"StackSize": 1,
 	"Stats": {
 	  "HPBonus": 0,
-	  "DamageBonus": 5,
+	  "DamageBonus": 8,
 	  "SpeedBonus": 15
 	},
 	"Description": "Кольцо быстрого удара. Увеличивает скорость на 15% и урон на 5."
