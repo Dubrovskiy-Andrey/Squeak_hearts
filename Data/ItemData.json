@@ -95,9 +95,9 @@
 	"StackSize": 1,
 	"Stats": {
 	  "HPBonus": 0,
-	  "DamageBonus": 8,
-	  "SpeedBonus": 15
+	  "DamageBonus": 12,
+	  "SpeedBonus": 25
 	},
-	"Description": "Кольцо быстрого удара. Увеличивает скорость на 15% и урон на 5."
+	"Description": "Кольцо быстрого удара. Увеличивает скорость на 25% и урон на 12."
   }
 }

@@ -4,18 +4,16 @@ var fade_rect: ColorRect
 var tween: Tween
 
 func _ready():
-	# Создаем ColorRect программно
 	fade_rect = ColorRect.new()
 	fade_rect.name = "FadeRect"
 	fade_rect.color = Color(0, 0, 0, 0)
 	fade_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(fade_rect)
 	
-	layer = 100  # Поверх всего
+	layer = 100 
 	fade_rect.visible = false
 	print("✅ TransitionManager создан")
 
-# Остальной код без изменений...
 func fade_out(duration: float = 0.5) -> void:
 	fade_rect.visible = true
 	

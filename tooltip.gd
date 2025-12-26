@@ -150,7 +150,7 @@ func _stats_to_text(stats_dict: Dictionary) -> String:
 		text += "⚔️ +" + str(stats_dict["DamageBonus"]) + " к урону\n"
 	
 	if stats_dict.has("SpeedBonus") and stats_dict["SpeedBonus"] > 0:
-		text += "🏃 +" + str(stats_dict["SpeedBonus"]) + "% к скорости передвижения\n"
+		text += "🏃 +" + str(stats_dict["SpeedBonus"]) + "% к скорости\n"
 	
 	# Если нет статистики, показываем тип предмета
 	if text == "":
